@@ -1,6 +1,6 @@
-# Lifestyle Maintenance Projects
+# DeepRoot Financial
 
-Welcome to the **Lifestyle Maintenance** repository. This repository contains tools,
+Welcome to the **DeepRoot Financial** repository. This repository contains tools,
 calculators, and applications designed to help you manage personal finance, visualize
 financial independence, and execute targeted wealth strategies.
 
