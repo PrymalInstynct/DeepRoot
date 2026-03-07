@@ -190,6 +190,17 @@ document.addEventListener("DOMContentLoaded", () => {
     lpNotes: document.getElementById("lpNotes"),
     btnLogLoanPayment: document.getElementById("btnLogLoanPayment"),
     tbLoanPayments: document.getElementById("tbLoanPayments"),
+
+    // Investment Account Entry
+    investmentForm: document.getElementById("investmentForm"),
+    invId: document.getElementById("invId"),
+    invName: document.getElementById("invName"),
+    invType: document.getElementById("invType"),
+    invValue: document.getElementById("invValue"),
+    invGrowth: document.getElementById("invGrowth"),
+    valInvGrowth: document.getElementById("valInvGrowth"),
+    btnSaveInvestment: document.getElementById("btnSaveInvestment"),
+    tbInvestments: document.getElementById("tbInvestments"),
   };
 
   // --- Global State ---
@@ -248,6 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loanPayments: {}, // Added for historical tracking
     dataHistorical: [], // Added for ledger tracking
     wealthActualsData: [], // Added for Actuals vs Projections chart
+    investments: [], // Added for Investment Account Entry
   };
 
   // --- UI Listeners ---
@@ -634,6 +646,9 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.val401kGrowth.textContent = `${Number(elements.inp401kGrowth.value).toFixed(2)}%`;
     elements.valRothGrowth.textContent = `${Number(elements.inpRothGrowth.value).toFixed(2)}%`;
     elements.valTaxableGrowth.textContent = `${Number(elements.inpTaxableGrowth.value).toFixed(2)}%`;
+    if (elements.valInvGrowth) {
+      elements.valInvGrowth.textContent = `${Number(elements.invGrowth.value).toFixed(2)}%`;
+    }
   };
 
   const debounce = (func, wait) => {
@@ -696,6 +711,7 @@ document.addEventListener("DOMContentLoaded", () => {
           "lpTax",
           "lpInsurance",
           "lpOverage",
+          "invValue",
         ].includes(input.id)
       ) {
         input.addEventListener("input", (e) => {
@@ -799,7 +815,49 @@ document.addEventListener("DOMContentLoaded", () => {
             alert("Failed to save property");
           }
         } catch (e) {
-          console.error(e);
+          console.error("Save property error:", e);
+        }
+      });
+    }
+
+    if (elements.btnSaveInvestment) {
+      elements.btnSaveInvestment.addEventListener("click", async () => {
+        if (!elements.investmentForm.checkValidity()) {
+          elements.investmentForm.reportValidity();
+          return;
+        }
+
+        const rawValue = parseFloat(elements.invValue.value.replace(/,/g, "")) || 0;
+        const payload = {
+          name: elements.invName.value,
+          account_type: elements.invType.value,
+          current_value: rawValue,
+          growth_target: parseFloat(elements.invGrowth.value) || 0,
+        };
+
+        const invIdVal = elements.invId.value;
+        const url = invIdVal 
+          ? API_URL_INVESTMENTS + `/${invIdVal}?user_id=1` 
+          : API_URL_INVESTMENTS + "?user_id=1";
+        const method = invIdVal ? "PUT" : "POST";
+
+        try {
+          const resp = await fetch(url, {
+            method: method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          if (resp.ok) {
+            elements.invId.value = "";
+            elements.btnSaveInvestment.textContent = "Save Account";
+            elements.investmentForm.reset();
+            updateSliderLabels();
+            await fetchInvestmentsFromAPI();
+          } else {
+            alert("Failed to save investment account");
+          }
+        } catch (e) {
+          console.error("Save investment error:", e);
         }
       });
     }
@@ -3226,8 +3284,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 <td class="py-3 px-4 text-right font-medium text-slate-200">${fmtCurrency.format(d.endBal)}</td>
             </tr>
         `,
-        )
-        .join("");
+      )
+      .join("");
 
     // Tab Roth UI Update
     const r55 = state.dataRoth.find((d) => d.age === 55);
@@ -3330,6 +3388,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const API_URL_HISTORICAL = "http://localhost:8000/api/historical";
   const API_URL_PAYSTUBS = "http://localhost:8000/api/paystubs";
   const API_URL_PROPERTIES = "http://localhost:8000/api/properties";
+  const API_URL_INVESTMENTS = "http://localhost:8000/api/investments";
   const API_URL_LOAN_PAYMENTS = "http://localhost:8000/api/loan-payments";
 
   async function fetchPropertiesFromAPI() {
@@ -3346,9 +3405,76 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       }
     } catch (e) {
-      console.error("Failed to fetch properties", e);
+      console.error("Failed to fetch properties:", e);
     }
   }
+
+  async function fetchInvestmentsFromAPI() {
+    try {
+      const resp = await fetch(API_URL_INVESTMENTS + "?user_id=1");
+      if (resp.ok) {
+        state.investments = await resp.json();
+        renderInvestmentsTable();
+      }
+    } catch (e) {
+      console.error("Failed to fetch investments:", e);
+    }
+  }
+
+  function renderInvestmentsTable() {
+    if (!elements.tbInvestments) return;
+    if (state.investments.length === 0) {
+      elements.tbInvestments.innerHTML = `<tr><td colspan="5" class="text-center py-4 text-slate-500 italic">No investment accounts logged yet.</td></tr>`;
+      return;
+    }
+
+    elements.tbInvestments.innerHTML = state.investments
+      .map((inv) => `
+        <tr class="hover:bg-white/5 transition-colors group">
+          <td class="py-3 px-4 text-slate-400 font-medium">${inv.account_type}</td>
+          <td class="py-3 px-4 text-slate-200 font-bold">${inv.name}</td>
+          <td class="py-3 px-4 text-right text-brand-300 font-mono font-bold">${fmtCurrency.format(inv.current_value)}</td>
+          <td class="py-3 px-4 text-right text-slate-400 font-mono">${inv.growth_target.toFixed(2)}%</td>
+          <td class="py-3 px-4 text-center">
+            <div class="flex justify-center gap-2">
+              <button onclick="editInvestment(${inv.id})" class="text-slate-400 hover:text-brand-400 transition-colors" title="Edit">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+              </button>
+              <button onclick="deleteInvestment(${inv.id})" class="text-slate-400 hover:text-red-400 transition-colors" title="Delete">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+  }
+
+  window.editInvestment = (id) => {
+    const inv = state.investments.find((i) => i.id === id);
+    if (!inv) return;
+    elements.invId.value = inv.id;
+    elements.invName.value = inv.name;
+    elements.invType.value = inv.account_type;
+    elements.invValue.value = inv.current_value.toLocaleString("en-US", { minimumFractionDigits: 2 });
+    elements.invGrowth.value = inv.growth_target;
+    if (elements.valInvGrowth) elements.valInvGrowth.textContent = `${inv.growth_target.toFixed(2)}%`;
+    elements.btnSaveInvestment.textContent = "Update Account";
+    elements.investmentForm.scrollIntoView({ behavior: "smooth" });
+  };
+
+  window.deleteInvestment = async (id) => {
+    if (!confirm("Are you sure you want to delete this investment account?")) return;
+    try {
+      const resp = await fetch(API_URL_INVESTMENTS + `/${id}?user_id=1`, {
+        method: "DELETE",
+      });
+      if (resp.ok) {
+        fetchInvestmentsFromAPI();
+      }
+    } catch (e) {
+      console.error("Delete investment error:", e);
+    }
+  };
 
   async function fetchExtraPaymentsFromAPI(propertyId) {
     try {
@@ -4454,6 +4580,7 @@ document.addEventListener("DOMContentLoaded", () => {
       await Promise.all([
         fetchSettingsFromAPI(),
         fetchPropertiesFromAPI(),
+        fetchInvestmentsFromAPI(),
         fetchAllExtraPayments(),
         fetchAllLoanPayments()
       ]);

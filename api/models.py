@@ -153,3 +153,14 @@ class LoanPayment(database.Base):
     notes = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     property = relationship("Property", back_populates="loan_payments")
+
+class InvestmentAccount(database.Base):
+    __tablename__ = "investment_accounts"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    name = Column(String, nullable=False)
+    account_type = Column(String, nullable=False)
+    current_value = Column(Float, nullable=False)
+    growth_target = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+

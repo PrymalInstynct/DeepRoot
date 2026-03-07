@@ -175,6 +175,21 @@ class PropertyValuationResponse(BaseModel):
     created_at: datetime
     class Config: from_attributes = True
 
+class InvestmentAccountCreate(BaseModel):
+    name: str
+    account_type: str
+    current_value: float
+    growth_target: float
+
+class InvestmentAccountUpdate(InvestmentAccountCreate):
+    pass
+
+class InvestmentAccountResponse(InvestmentAccountCreate):
+    id: int
+    user_id: int
+    created_at: datetime
+    class Config: from_attributes = True
+
 @app.get("/health")
 def health_check(): return {"status": "healthy"}
 
@@ -329,6 +344,45 @@ def delete_loan_payment(payment_id: int, user_id: int = 1, db: Session = Depends
     if not p:
         raise HTTPException(status_code=404, detail="Loan payment not found")
     db.delete(p); db.commit()
+    return {"ok": True}
+
+# --- Investment Accounts ---
+@app.get("/api/investments", response_model=list[InvestmentAccountResponse])
+def get_investments(user_id: int = 1, db: Session = Depends(database.get_db)):
+    return db.query(models.InvestmentAccount).filter(models.InvestmentAccount.user_id == user_id).all()
+
+@app.post("/api/investments", response_model=InvestmentAccountResponse)
+def create_investment(inv_in: InvestmentAccountCreate, user_id: int = 1, db: Session = Depends(database.get_db)):
+    data = inv_in.model_dump()
+    data["current_value"] = round(data["current_value"], 2)
+    new_inv = models.InvestmentAccount(**data, user_id=user_id)
+    db.add(new_inv); db.commit(); db.refresh(new_inv)
+    return new_inv
+
+@app.put("/api/investments/{inv_id}", response_model=InvestmentAccountResponse)
+def update_investment(inv_id: int, inv_in: InvestmentAccountUpdate, user_id: int = 1, db: Session = Depends(database.get_db)):
+    inv = db.query(models.InvestmentAccount).filter(
+        models.InvestmentAccount.id == inv_id,
+        models.InvestmentAccount.user_id == user_id
+    ).first()
+    if not inv:
+        raise HTTPException(status_code=404, detail="Investment account not found")
+    for field, value in inv_in.model_dump().items():
+        if field == "current_value":
+            value = round(value, 2)
+        setattr(inv, field, value)
+    db.commit(); db.refresh(inv)
+    return inv
+
+@app.delete("/api/investments/{inv_id}")
+def delete_investment(inv_id: int, user_id: int = 1, db: Session = Depends(database.get_db)):
+    inv = db.query(models.InvestmentAccount).filter(
+        models.InvestmentAccount.id == inv_id,
+        models.InvestmentAccount.user_id == user_id
+    ).first()
+    if not inv:
+        raise HTTPException(status_code=404, detail="Investment account not found")
+    db.delete(inv); db.commit()
     return {"ok": True}
 
 if __name__ == "__main__":

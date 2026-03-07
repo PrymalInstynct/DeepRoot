@@ -48,8 +48,10 @@ technologies:
 | GET/POST | `/api/properties/{id}/payments` | Actual monthly loan payments |
 | DELETE | `/api/loan-payments/{id}` | Remove a specific loan payment |
 | GET | `/api/loan-payments` | All loan payments across all properties |
-| GET/POST/DELETE | `/api/properties/{id}/extra-payments` | Extra/lump-sum payments |
+| GET/POST | `/api/properties/{id}/extra-payments` | Extra/lump-sum payments |
 | GET | `/api/properties/{id}/valuations` | Property valuation history |
+| GET/POST | `/api/investments` | Investment account records |
+| GET/PUT/DELETE | `/api/investments/{id}` | Read, update, or delete an investment account |
 
 ---
 
@@ -153,7 +155,17 @@ A dedicated form for managing real-estate holdings. Each property record stores:
   amortization estimates for Payment 1 (Principal & Interest).
 - Edit and delete operations are fully supported via the API.
 
-#### 10. Property Details
+#### 10. Investment Account Entry
+
+A mirror of the Property Entry architecture tailored for financial investment accounts (401k, Roth IRA, HSA, Brokerage, etc.). Features:
+
+- **Account Tracking:** Monitor current values and growth targets for individual accounts.
+- **Account Types:** Supports specific tagging for 401(k), Roth IRA, Traditional IRA, HSA, 529 plan, Brokerage, and Money Market accounts.
+- **Rounding:** Automatically rounds current values to 2 decimal places on save for financial accuracy.
+- **Full CRUD:** Interactively add, edit, or delete accounts through a sleek UI.
+- **Persistence:** All account data is stored in the PostgreSQL `investment_accounts` table.
+
+#### 11. Property Details
 
 A rich analytics dashboard for a selected property. Displays:
 
@@ -189,7 +201,7 @@ A rich analytics dashboard for a selected property. Displays:
 - **Monthly Payment History:** A full history table of all logged payments, with the
   most-recent entry highlighted with a `LATEST` badge and blue left border.
 
-#### 11. Total Net Worth Stack
+#### 12. Total Net Worth Stack
 
 A macro-view stacked-bar chart aggregating all asset classes:
 
