@@ -58,13 +58,7 @@ class GlobalSettingsUpdate(BaseModel):
     k401_match_type: float
     k401_match_limit_percent: float
     k401_auto_contribution_percent: float
-    k401_start_balance: float
-    k401_growth_rate: float
-    roth_ira_start_balance: float
-    roth_ira_growth_rate: float
     timezone: str
-    taxable_start_balance: float
-    taxable_growth_rate: float
     target_bonus_percent: float
     target_retirement_age: int
     target_roth_retirement_age: int
@@ -187,6 +181,14 @@ class InvestmentAccountUpdate(InvestmentAccountCreate):
 class InvestmentAccountResponse(InvestmentAccountCreate):
     id: int
     user_id: int
+    created_at: datetime
+    class Config: from_attributes = True
+
+class InvestmentValuationResponse(BaseModel):
+    id: int
+    account_id: int
+    valuation_date: date
+    value: float
     created_at: datetime
     class Config: from_attributes = True
 
@@ -357,6 +359,15 @@ def create_investment(inv_in: InvestmentAccountCreate, user_id: int = 1, db: Ses
     data["current_value"] = round(data["current_value"], 2)
     new_inv = models.InvestmentAccount(**data, user_id=user_id)
     db.add(new_inv); db.commit(); db.refresh(new_inv)
+    
+    # Record initial history
+    history = models.InvestmentValuation(
+        account_id=new_inv.id,
+        valuation_date=date.today(),
+        value=new_inv.current_value
+    )
+    db.add(history); db.commit()
+    
     return new_inv
 
 @app.put("/api/investments/{inv_id}", response_model=InvestmentAccountResponse)
@@ -367,12 +378,35 @@ def update_investment(inv_id: int, inv_in: InvestmentAccountUpdate, user_id: int
     ).first()
     if not inv:
         raise HTTPException(status_code=404, detail="Investment account not found")
+    old_value = inv.current_value
     for field, value in inv_in.model_dump().items():
         if field == "current_value":
             value = round(value, 2)
         setattr(inv, field, value)
     db.commit(); db.refresh(inv)
+
+    # Record history if value changed
+    if old_value != inv.current_value:
+        history = models.InvestmentValuation(
+            account_id=inv.id,
+            valuation_date=date.today(),
+            value=inv.current_value
+        )
+        db.add(history); db.commit()
+
     return inv
+
+@app.get("/api/investments/{inv_id}/history", response_model=list[InvestmentValuationResponse])
+def get_investment_history(inv_id: int, user_id: int = 1, db: Session = Depends(database.get_db)):
+    inv = db.query(models.InvestmentAccount).filter(
+        models.InvestmentAccount.id == inv_id,
+        models.InvestmentAccount.user_id == user_id
+    ).first()
+    if not inv:
+        raise HTTPException(status_code=404, detail="Investment account not found")
+    return db.query(models.InvestmentValuation).filter(
+        models.InvestmentValuation.account_id == inv_id
+    ).order_by(models.InvestmentValuation.valuation_date.desc()).all()
 
 @app.delete("/api/investments/{inv_id}")
 def delete_investment(inv_id: int, user_id: int = 1, db: Session = Depends(database.get_db)):

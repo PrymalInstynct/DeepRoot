@@ -39,12 +39,6 @@ class GlobalSetting(database.Base):
     k401_match_type = Column(Float, default=1.0)
     k401_match_limit_percent = Column(Float, default=0.04)
     k401_auto_contribution_percent = Column(Float, default=0.0)
-    k401_start_balance = Column(Float, default=50000.0)
-    k401_growth_rate = Column(Float, default=0.07)
-    roth_ira_start_balance = Column(Float, default=10000.0)
-    roth_ira_growth_rate = Column(Float, default=0.07)
-    taxable_start_balance = Column(Float, default=20000.0)
-    taxable_growth_rate = Column(Float, default=0.07)
     target_bonus_percent = Column(Float, default=0.10)
     target_retirement_age = Column(Integer, default=65)
     target_roth_retirement_age = Column(Integer, default=65)
@@ -163,4 +157,14 @@ class InvestmentAccount(database.Base):
     current_value = Column(Float, nullable=False)
     growth_target = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
+    valuations = relationship("InvestmentValuation", back_populates="account", cascade="all, delete-orphan")
+
+class InvestmentValuation(database.Base):
+    __tablename__ = "investment_valuations"
+    id = Column(Integer, primary_key=True, index=True)
+    account_id = Column(Integer, ForeignKey("investment_accounts.id"), nullable=False)
+    valuation_date = Column(Date, nullable=False)
+    value = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    account = relationship("InvestmentAccount", back_populates="valuations")
 

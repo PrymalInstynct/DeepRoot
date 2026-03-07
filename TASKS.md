@@ -1,7 +1,8 @@
 # Tasks
 
 - [x] 2026-03-04: Upgrade financial dashboard to full-stack application (FastAPI, PostgreSQL, Worker, Docker Compose).
-- [x] 2026-03-07: Implemented "Investment Account Entry" feature with full CRUD (Create, Read, Update, Delete) functionality mirroring the Property Entry architecture, including backend SQLAlchemy models and API endpoints.
+- [x] 2026-03-07: Implemented "Investment Account Entry" feature with full CRUD (Create, Read, Update, Delete) functionality mirroring the Property Entry architecture, including backend SQLAlchemy models and API endpoints. Refactored to remove legacy global settings for investment accounts and implemented dynamic aggregation.
+- [x] 2026-03-07: Enhanced Investment Accounts with non-destructive historical tracking. Every value update now automatically records a timestamped valuation entry, viewable via a new frontend 'History' modal.
 - [x] 2026-03-06: Refactored Property Details tab to merge Mortgage Amortization functionality, including new Equity Growth and Valuation History visualizations.
 - [x] 2026-03-03: Create the 50/50 Liquidity Split interactive web app with Vanilla JS and Tailwind CSS.
 

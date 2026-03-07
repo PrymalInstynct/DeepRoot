@@ -47,15 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
     inp401kMatchType: document.getElementById("inp401kMatchType"),
     inp401kMatchLimit: document.getElementById("inp401kMatchLimit"),
     inp401kAuto: document.getElementById("inp401kAuto"),
-    inp401kGrowth: document.getElementById("inp401kGrowth"),
-    val401kGrowth: document.getElementById("val401kGrowth"),
-    inpRothGrowth: document.getElementById("inpRothGrowth"),
-    valRothGrowth: document.getElementById("valRothGrowth"),
-    inp401kBal: document.getElementById("inp401kBal"),
-    inpRothBal: document.getElementById("inpRothBal"),
-    inpTaxableBal: document.getElementById("inpTaxableBal"),
-    inpTaxableGrowth: document.getElementById("inpTaxableGrowth"),
-    valTaxableGrowth: document.getElementById("valTaxableGrowth"),
     // Advanced Mode Elements
     btnTaxMode: document.getElementById("btnTaxMode"),
     taxSimpleMode: document.getElementById("tax-simple-mode"),
@@ -201,6 +192,12 @@ document.addEventListener("DOMContentLoaded", () => {
     valInvGrowth: document.getElementById("valInvGrowth"),
     btnSaveInvestment: document.getElementById("btnSaveInvestment"),
     tbInvestments: document.getElementById("tbInvestments"),
+
+    // Investment History Modal
+    modalInvestmentHistory: document.getElementById("modalInvestmentHistory"),
+    historyInvName: document.getElementById("historyInvName"),
+    btnCloseInvHistory: document.getElementById("btnCloseInvHistory"),
+    tbInvHistory: document.getElementById("tbInvHistory"),
   };
 
   // --- Global State ---
@@ -643,9 +640,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const updateSliderLabels = () => {
     elements.valRaise.textContent = `${Number(elements.inpRaise.value).toFixed(2)}%`;
-    elements.val401kGrowth.textContent = `${Number(elements.inp401kGrowth.value).toFixed(2)}%`;
-    elements.valRothGrowth.textContent = `${Number(elements.inpRothGrowth.value).toFixed(2)}%`;
-    elements.valTaxableGrowth.textContent = `${Number(elements.inpTaxableGrowth.value).toFixed(2)}%`;
     if (elements.valInvGrowth) {
       elements.valInvGrowth.textContent = `${Number(elements.invGrowth.value).toFixed(2)}%`;
     }
@@ -672,8 +666,6 @@ document.addEventListener("DOMContentLoaded", () => {
       } else if (
         [
           "inpSalary",
-          "inp401kBal",
-          "inpTaxableBal",
           "inpAdvFed",
           "inpAdvSS",
           "inpAdvMed",
@@ -1041,9 +1033,9 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         // Fallback: Estimate from raw global inputs
         let totalNW =
-          (parsed.k401Bal || 0) +
+          (parsed.k401StartBal || 0) +
           (parsed.rothStartBal || 0) +
-          (parsed.taxableBal || 0);
+          (parsed.taxableStartBal || 0);
 
         // Add YTD Net Pay from paystubs
         const currentYear = new Date().getFullYear();
@@ -1184,6 +1176,32 @@ document.addEventListener("DOMContentLoaded", () => {
       insPremiumPay = parseFloat(elements.inpInsurance.value) || 0;
     }
 
+    // --- Dynamic Investment Aggregation ---
+    let k401Bal = 0, k401GrowthSum = 0;
+    let rothBal = 0, rothGrowthSum = 0;
+    let taxableBal = 0, taxableGrowthSum = 0;
+
+    (state.investments || []).forEach(inv => {
+      const val = inv.current_value || 0;
+      const growth = (inv.growth_target || 0) / 100;
+      
+      if (inv.account_type === "401(k)") {
+        k401Bal += val;
+        k401GrowthSum += val * growth;
+      } else if (inv.account_type === "Roth IRA") {
+        rothBal += val;
+        rothGrowthSum += val * growth;
+      } else {
+        // Traditional IRA, HSA, 529 plan, Brokerage Account, Money Market
+        taxableBal += val;
+        taxableGrowthSum += val * growth;
+      }
+    });
+
+    const k401GrowthFinal = k401Bal > 0 ? k401GrowthSum / k401Bal : 0.07;
+    const rothGrowthFinal = rothBal > 0 ? rothGrowthSum / rothBal : 0.07;
+    const taxableGrowthFinal = taxableBal > 0 ? taxableGrowthSum / taxableBal : 0.07;
+
     return {
       age: currentAge,
       salary: salary,
@@ -1197,15 +1215,12 @@ document.addEventListener("DOMContentLoaded", () => {
       k401MatchLimitPct:
         parseFloat(elements.inp401kMatchLimit.value) / 100 || 0,
       k401AutoPct: parseFloat(elements.inp401kAuto.value) / 100 || 0,
-      k401Growth: parseFloat(elements.inp401kGrowth.value) / 100 || 0,
-      roth_ira_growth_rate: parseFloat(elements.inpRothGrowth.value) / 100 || 0,
-      k401StartBal:
-        parseFloat(elements.inp401kBal.value.replace(/,/g, "")) || 0,
-      rothStartBal:
-        parseFloat(elements.inpRothBal.value.replace(/,/g, "")) || 0,
-      taxableStartBal:
-        parseFloat(elements.inpTaxableBal.value.replace(/,/g, "")) || 0,
-      taxableGrowth: parseFloat(elements.inpTaxableGrowth.value) / 100 || 0,
+      k401Growth: k401GrowthFinal,
+      roth_ira_growth_rate: rothGrowthFinal,
+      k401StartBal: k401Bal,
+      rothStartBal: rothBal,
+      taxableStartBal: taxableBal,
+      taxableGrowth: taxableGrowthFinal,
       targetBonusPct: elements.inpBonus
         ? parseFloat(elements.inpBonus.value) / 100 || 0
         : 0,
@@ -3437,6 +3452,9 @@ document.addEventListener("DOMContentLoaded", () => {
           <td class="py-3 px-4 text-right text-slate-400 font-mono">${inv.growth_target.toFixed(2)}%</td>
           <td class="py-3 px-4 text-center">
             <div class="flex justify-center gap-2">
+              <button onclick="viewInvestmentHistory(${inv.id}, '${inv.name}')" class="text-slate-400 hover:text-brand-400 transition-colors" title="View History">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </button>
               <button onclick="editInvestment(${inv.id})" class="text-slate-400 hover:text-brand-400 transition-colors" title="Edit">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
               </button>
@@ -3461,7 +3479,6 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.btnSaveInvestment.textContent = "Update Account";
     elements.investmentForm.scrollIntoView({ behavior: "smooth" });
   };
-
   window.deleteInvestment = async (id) => {
     if (!confirm("Are you sure you want to delete this investment account?")) return;
     try {
@@ -3475,6 +3492,40 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Delete investment error:", e);
     }
   };
+
+  window.viewInvestmentHistory = async (id, name) => {
+    if (!elements.modalInvestmentHistory || !elements.tbInvHistory) return;
+    elements.historyInvName.textContent = name;
+    elements.tbInvHistory.innerHTML = `<tr><td colspan="2" class="text-center py-4">Loading history...</td></tr>`;
+    elements.modalInvestmentHistory.classList.remove("hidden");
+
+    try {
+      const resp = await fetch(API_URL_INVESTMENTS + `/${id}/history?user_id=1`);
+      if (resp.ok) {
+        const history = await resp.json();
+        if (history.length === 0) {
+          elements.tbInvHistory.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-slate-500 italic">No history available for this account.</td></tr>`;
+        } else {
+          elements.tbInvHistory.innerHTML = history
+            .map(h => `
+              <tr class="border-b border-dark-border/50 hover:bg-white/5 transition-colors">
+                <td class="py-3 px-4 text-slate-400 font-mono">${new Date(h.valuation_date).toLocaleDateString()}</td>
+                <td class="py-3 px-4 text-slate-200 font-bold font-mono">${fmtCurrency.format(h.value)}</td>
+              </tr>
+            `).join("");
+        }
+      }
+    } catch (e) {
+      console.error("View investment history error:", e);
+      elements.tbInvHistory.innerHTML = `<tr><td colspan="2" class="text-center py-4 text-red-400">Error loading history.</td></tr>`;
+    }
+  };
+
+  if (elements.btnCloseInvHistory) {
+    elements.btnCloseInvHistory.addEventListener("click", () => {
+      elements.modalInvestmentHistory.classList.add("hidden");
+    });
+  }
 
   async function fetchExtraPaymentsFromAPI(propertyId) {
     try {
@@ -3872,42 +3923,9 @@ document.addEventListener("DOMContentLoaded", () => {
             maximumFractionDigits: 2,
           });
 
-        // Restore 401(k) / Investments
-        if (typeof data.contribution_401k_percent === "number")
-          elements.inp401kPersonal.value = data.contribution_401k_percent * 100;
-        if (data.k401_match_type !== undefined)
-          elements.inp401kMatchType.value = data.k401_match_type;
-        if (typeof data.k401_match_limit_percent === "number")
-          elements.inp401kMatchLimit.value =
-            data.k401_match_limit_percent * 100;
         if (typeof data.k401_auto_contribution_percent === "number")
           elements.inp401kAuto.value =
             data.k401_auto_contribution_percent * 100;
-        if (typeof data.k401_start_balance === "number")
-          elements.inp401kBal.value = data.k401_start_balance.toLocaleString(
-            "en-US",
-            { minimumFractionDigits: 0, maximumFractionDigits: 2 },
-          );
-        if (typeof data.k401_growth_rate === "number")
-          elements.inp401kGrowth.value = data.k401_growth_rate * 100;
-        if (typeof data.roth_ira_start_balance === "number")
-          elements.inpRothBal.value =
-            data.roth_ira_start_balance.toLocaleString("en-US", {
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 2,
-            });
-        if (typeof data.roth_ira_growth_rate === "number")
-          elements.inpRothGrowth.value = data.roth_ira_growth_rate * 100;
-
-        // Restore Taxable
-        if (typeof data.taxable_start_balance === "number")
-          elements.inpTaxableBal.value =
-            data.taxable_start_balance.toLocaleString("en-US", {
-              minimumFractionDigits: 0,
-              maximumFractionDigits: 2,
-            });
-        if (typeof data.taxable_growth_rate === "number")
-          elements.inpTaxableGrowth.value = data.taxable_growth_rate * 100;
 
         // Restore Retirement Goals
         if (typeof data.target_bonus_percent === "number")
@@ -3976,17 +3994,10 @@ document.addEventListener("DOMContentLoaded", () => {
       k401_match_type: parsed.k401MatchType,
       k401_match_limit_percent: parsed.k401MatchLimitPct,
       k401_auto_contribution_percent: parsed.k401AutoPct,
-      k401_start_balance: parsed.k401StartBal,
-      k401_growth_rate: parsed.k401Growth,
-      roth_ira_start_balance: parsed.rothStartBal,
-      roth_ira_growth_rate: parsed.roth_ira_growth_rate,
       target_roth_retirement_age: parsed.targetRothRetirementAge,
       roth_withdrawal_retirement: parsed.rothWithdrawalRetAge,
       roth_withdrawal_rate: parsed.rothWithdrawalRate,
       timezone: parsed.timezone,
-
-      taxable_start_balance: parsed.taxableStartBal,
-      taxable_growth_rate: parsed.taxableGrowth,
 
       target_bonus_percent: parsed.targetBonusPct,
       target_retirement_age: parsed.targetRetirementAge,
