@@ -1,0 +1,129 @@
+/* Custom CSS extensions */
+:root {
+  color-scheme: dark;
+}
+
+body {
+  scrollbar-color: #334155 #0f172a;
+  scrollbar-width: thin;
+}
+
+.glass-panel {
+  background: rgba(30, 41, 59, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar-header {
+  letter-spacing: 0.15em;
+  transition: color 0.2s ease;
+}
+
+.sidebar-header:hover {
+  color: #94a3b8;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #334155;
+  border-radius: 12px;
+}
+.custom-scrollbar::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+/* Range input specialized styling */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #2dd4bf;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(45, 212, 191, 0.4);
+  transform: translateY(0);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+  margin-top: -5px; /* Alignment fix for Safari/Chrome */
+}
+
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 4px;
+  background: #1e293b;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 16px rgba(45, 212, 191, 0.6);
+}
+
+input[type="range"]::-moz-range-thumb {
+  height: 18px;
+  width: 18px;
+  border-radius: 50%;
+  background: #2dd4bf;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 0 12px rgba(45, 212, 191, 0.4);
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  border-radius: 4px;
+  background: #1e293b;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 0 16px rgba(45, 212, 191, 0.6);
+}
+
+/* Base input transitions */
+input,
+select {
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+/* Crossover Row highlight */
+.crossover-row {
+  background: linear-gradient(
+    90deg,
+    rgba(20, 184, 166, 0.15) 0%,
+    rgba(20, 184, 166, 0.05) 60%,
+    transparent 100%
+  );
+  position: relative;
+  border-left: 3px solid #14b8a6;
+}
+
+.crossover-row td {
+  color: #f8fafc;
+}
+
+.crossover-row td:nth-child(5) {
+  /* Investment Bal Column */
+  color: #2dd4bf;
+  font-weight: 700;
+}
+
+.crossover-row td:nth-child(6) {
+  /* Mortgage Bal Column */
+  color: #94a3b8;
+  text-decoration: line-through; /* Visual cue that it's paid off! */
+}

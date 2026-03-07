@@ -1,0 +1,3570 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Financial Planning Dashboard</title>
+    <meta
+      name="description"
+      content="A comprehensive financial planning dashboard."
+    />
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Inter", "sans-serif"] },
+            colors: {
+              brand: {
+                50: "#f0fdfa",
+                100: "#ccfbf1",
+                200: "#99f6e4",
+                300: "#5eead4",
+                400: "#2dd4bf",
+                500: "#14b8a6",
+                600: "#0d9488",
+                700: "#0f766e",
+                800: "#115e59",
+                900: "#134e4a",
+                950: "#042f2e",
+              },
+              dark: { bg: "#0f172a", panel: "#1e293b", border: "#334155" },
+            },
+          },
+        },
+      };
+    </script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: #475569;
+      }
+      .tab-content {
+        display: none;
+      }
+      .tab-content.active {
+        display: block;
+        animation: fadeIn 0.3s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(5px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .nav-link.active {
+        border-left-color: #14b8a6;
+        color: #5eead4;
+        background-color: rgba(20, 184, 166, 0.1);
+      }
+      .nav-link {
+        border-left-width: 4px;
+        border-left-color: transparent;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-dark-bg text-slate-200 font-sans antialiased min-h-screen flex flex-col selection:bg-brand-500 selection:text-white"
+  >
+    <!-- Top Bar: Global Inputs -->
+    <header
+      class="bg-dark-panel border-b border-dark-border shadow-xl sticky top-0 z-50 flex-shrink-0"
+    >
+      <div
+        class="px-4 py-3 flex justify-between items-center bg-slate-900 cursor-pointer"
+        id="headerToggle"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-brand-500/30"
+          >
+            %
+          </div>
+          <h1
+            class="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400"
+          >
+            Financial Control Center
+          </h1>
+        </div>
+        <div class="flex items-center gap-2 text-sm font-medium text-brand-400">
+          <span id="toggleText">Hide Global Settings</span>
+          <svg
+            id="toggleIcon"
+            class="w-5 h-5 transition-transform duration-300"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M5 15l7-7 7 7"
+            ></path>
+          </svg>
+        </div>
+      </div>
+
+      <div
+        id="globalInputsPanel"
+        class="max-h-[50vh] overflow-hidden transition-all duration-300"
+      >
+        <div
+          class="px-4 py-4 grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-4 text-sm"
+        >
+          <!-- Category 1: Base Profile -->
+          <div class="space-y-3">
+            <h3
+              class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-dark-border pb-1"
+            >
+              Profile
+            </h3>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Timezone</label
+              >
+              <select
+                id="inpTimezone"
+                class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              >
+                <option value="UTC">UTC (Standard)</option>
+                <option value="America/New_York">Eastern Time (US)</option>
+                <option value="America/Chicago">Central Time (US)</option>
+                <option value="America/Denver">Mountain Time (US)</option>
+                <option value="America/Phoenix">Arizona (MST)</option>
+                <option value="America/Los_Angeles">Pacific Time (US)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Date of Birth</label
+              >
+              <input
+                type="date"
+                id="inpDob"
+                value="1970-01-01"
+                class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              />
+            </div>
+            <div class="border-t border-dark-border pt-3 mt-1">
+              <h4
+                class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1"
+              >
+                Wage Information
+              </h4>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Base Salary ($)</label
+              >
+              <input
+                type="text"
+                id="inpSalary"
+                value="150,000"
+                class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Pay Period Schedule</label
+              >
+              <select
+                id="inpPayPeriod"
+                class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              >
+                <option value="52">Weekly</option>
+                <option value="26">Bi-weekly</option>
+                <option value="24">1st/15th (Semi-mo)</option>
+                <option value="12">Monthly</option>
+              </select>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <label class="text-xs font-medium text-slate-300"
+                  >Projected Yearly Raise (%)</label
+                ><span id="valRaise" class="text-brand-400 text-xs font-bold"
+                  >3.0%</span
+                >
+              </div>
+              <input
+                type="range"
+                id="inpRaise"
+                min="0"
+                max="10"
+                step="0.25"
+                value="3.0"
+                class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+          </div>
+
+          <!-- Category 2: Taxes & Deductions -->
+          <div class="space-y-3">
+            <div
+              class="flex justify-between items-center border-b border-dark-border pb-1"
+            >
+              <h3
+                class="text-xs font-bold text-slate-400 uppercase tracking-widest"
+              >
+                Taxes & Deductions
+              </h3>
+              <button
+                id="btnTaxMode"
+                class="text-[10px] uppercase font-bold bg-dark-bg px-2 py-0.5 rounded text-brand-400 border border-brand-500/30 hover:bg-brand-500/10 transition-colors"
+              >
+                Advanced
+              </button>
+            </div>
+
+            <div id="tax-simple-mode" class="space-y-3">
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1"
+                  >Fed Taxes (%)</label
+                >
+                <input
+                  type="number"
+                  id="inpFedTax"
+                  value="22"
+                  step="0.5"
+                  class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1"
+                  >State Taxes (%)</label
+                >
+                <input
+                  type="number"
+                  id="inpStateTax"
+                  value="5"
+                  step="0.5"
+                  class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1"
+                  >Insurance Premiums ($/paycheck)</label
+                >
+                <input
+                  type="number"
+                  id="inpInsurance"
+                  value="150"
+                  class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+            </div>
+
+            <div id="tax-adv-mode" class="space-y-3 hidden">
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1"
+                  >Fed Income ($/pay)</label
+                >
+                <input
+                  type="text"
+                  id="inpAdvFed"
+                  value="1,000"
+                  class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Social Sec ($/pay)</label
+                  >
+                  <input
+                    type="text"
+                    id="inpAdvSS"
+                    value="350"
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Medicare ($/pay)</label
+                  >
+                  <input
+                    type="text"
+                    id="inpAdvMed"
+                    value="85"
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >State Tax ($/pay)</label
+                  >
+                  <input
+                    type="text"
+                    id="inpAdvState"
+                    value="250"
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  />
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] font-medium text-slate-300 mb-1"
+                    >State Other ($/pay)</label
+                  >
+                  <input
+                    type="text"
+                    id="inpAdvStateOther"
+                    value="0"
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  />
+                </div>
+              </div>
+
+              <div class="border-t border-dark-border py-2 mt-2">
+                <h4
+                  class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2"
+                >
+                  Insurance Details
+                </h4>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1"
+                      >Medical ($/pay)</label
+                    >
+                    <input
+                      type="text"
+                      id="inpAdvMedIns"
+                      value="100"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1"
+                      >Dental ($/pay)</label
+                    >
+                    <input
+                      type="text"
+                      id="inpAdvDental"
+                      value="25"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1"
+                      >Vision ($/pay)</label
+                    >
+                    <input
+                      type="text"
+                      id="inpAdvVision"
+                      value="10"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[10px] font-medium text-slate-300 mb-1"
+                      >Life ($/pay)</label
+                    >
+                    <input
+                      type="text"
+                      id="inpAdvLife"
+                      value="15"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                    />
+                  </div>
+                </div>
+                <!-- Additional Deductions -->
+                <div class="grid grid-cols-2 gap-2 mt-2">
+                  <div>
+                    <label
+                      class="block text-[10px] font-medium text-slate-300 mb-1"
+                      >Other Ins. ($/pay)</label
+                    >
+                    <input
+                      type="text"
+                      id="inpAdvOtherIns"
+                      value="0"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[10px] font-medium text-slate-300 mb-1"
+                      >HSA Contrib ($/pay)</label
+                    >
+                    <input
+                      type="text"
+                      id="inpAdvHsa"
+                      value="0"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category 3: 401(k) Retirement -->
+          <div class="space-y-3">
+            <h3
+              class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-dark-border pb-1"
+            >
+              Retirement
+            </h3>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Personal Contribution (%)</label
+              >
+              <input
+                type="number"
+                id="inp401kPersonal"
+                value="8"
+                step="0.5"
+                class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Company Match Type</label
+              >
+              <select
+                id="inp401kMatchType"
+                class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              >
+                <option value="1.0">100% Match (1-to-1)</option>
+                <option value="0.5">50% Match (0.5-to-1)</option>
+                <option value="0.0">No Match</option>
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label
+                  class="block text-xs font-medium text-slate-300 mb-1"
+                  title="Max match out of salary %"
+                  >Match Limit (%)</label
+                >
+                <input
+                  type="number"
+                  id="inp401kMatchLimit"
+                  value="4"
+                  step="0.5"
+                  class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+              <div>
+                <label
+                  class="block text-xs font-medium text-slate-300 mb-1"
+                  title="Unconditional company contribution"
+                  >Auto Contribution (%)</label
+                >
+                <input
+                  type="number"
+                  id="inp401kAuto"
+                  value="0"
+                  step="0.5"
+                  class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1"
+                  >Current 401(k) Bal ($)</label
+                >
+                <input
+                  type="text"
+                  id="inp401kBal"
+                  value="10,000"
+                  class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1"
+                  >Current Roth IRA Bal ($)</label
+                >
+                <input
+                  type="text"
+                  id="inpRothBal"
+                  value="0"
+                  class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <div class="flex justify-between mb-1">
+                  <label class="text-xs font-medium text-slate-300"
+                    >Projected 401(k) Growth</label
+                  ><span
+                    id="val401kGrowth"
+                    class="text-brand-400 text-xs font-bold"
+                    >7.0%</span
+                  >
+                </div>
+                <input
+                  type="range"
+                  id="inp401kGrowth"
+                  min="0"
+                  max="15"
+                  step="0.25"
+                  value="7.0"
+                  class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer mt-2"
+                />
+              </div>
+              <div>
+                <div class="flex justify-between mb-1">
+                  <label class="text-xs font-medium text-slate-300"
+                    >Projected Roth IRA Growth</label
+                  ><span
+                    id="valRothGrowth"
+                    class="text-brand-400 text-xs font-bold"
+                    >7.0%</span
+                  >
+                </div>
+                <input
+                  type="range"
+                  id="inpRothGrowth"
+                  min="0"
+                  max="15"
+                  step="0.25"
+                  value="7.0"
+                  class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer mt-2"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Category 4: Other Investments -->
+          <div class="space-y-3">
+            <h3
+              class="text-xs font-bold text-slate-400 uppercase tracking-widest border-b border-dark-border pb-1"
+            >
+              Brokerage Account
+            </h3>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Brokerage Account Bal ($)</label
+              >
+              <input
+                type="text"
+                id="inpTaxableBal"
+                value="0"
+                class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              />
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <label class="text-xs font-medium text-slate-300"
+                  >Brokerage Account Growth</label
+                ><span
+                  id="valTaxableGrowth"
+                  class="text-brand-400 text-xs font-bold"
+                  >7.0%</span
+                >
+              </div>
+              <input
+                type="range"
+                id="inpTaxableGrowth"
+                min="0"
+                max="15"
+                step="0.25"
+                value="7.0"
+                class="w-full h-1.5 bg-slate-800 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content (Tabs Reorganized into Sidebar) -->
+    <main class="flex-1 flex flex-row overflow-hidden">
+      <!-- Sidebar Navigation -->
+      <aside
+        class="w-72 border-r border-dark-border bg-dark-panel/40 flex flex-col overflow-y-auto custom-scrollbar flex-shrink-0"
+      >
+        <div class="px-4 py-8 space-y-10">
+          <!-- Category: Dashboard Overview -->
+          <div class="space-y-3">
+            <h3
+              class="sidebar-header px-4 text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                />
+              </svg>
+              Overview
+            </h3>
+            <div class="flex flex-col space-y-1">
+              <button
+                data-tab="tab-home"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors active border-brand-500 text-white"
+              >
+                Dashboard Home
+              </button>
+            </div>
+          </div>
+
+          <!-- Category: Wealth Tracking -->
+          <div class="space-y-3">
+            <h3
+              class="sidebar-header px-4 text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                ></path>
+              </svg>
+              Wealth Tracking
+            </h3>
+            <div class="flex flex-col space-y-1">
+              <button
+                data-tab="tab-networth"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Total Net Worth Stack
+              </button>
+              <button
+                data-tab="tab-historical"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Historical Ledger
+              </button>
+              <button
+                data-tab="tab-wealth-actuals"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Wealth Growth (Actuals)
+              </button>
+            </div>
+          </div>
+
+          <!-- Category: Income & Wages -->
+          <div class="space-y-3">
+            <h3
+              class="sidebar-header px-4 text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                ></path>
+              </svg>
+              Income & Wages
+            </h3>
+            <div class="flex flex-col space-y-1">
+              <button
+                data-tab="tab-paystub"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Paystub Entry
+              </button>
+              <button
+                data-tab="tab-observability"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Income Observability
+              </button>
+              <button
+                data-tab="tab-salary"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Salary & Bonus Forecaster
+              </button>
+            </div>
+          </div>
+
+          <!-- Category: Retirement Planning -->
+          <div class="space-y-6">
+            <h3
+              class="sidebar-header px-4 text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                ></path>
+              </svg>
+              Retirement Planning
+            </h3>
+
+            <div class="space-y-4">
+              <!-- Sub-Category: 401(k) -->
+              <div class="space-y-2">
+                <h4
+                  class="px-8 text-[10px] font-bold text-slate-600 uppercase tracking-widest"
+                >
+                  401(k) Planning
+                </h4>
+                <div class="flex flex-col space-y-1">
+                  <button
+                    data-tab="tab-401k"
+                    class="nav-link w-full text-left px-8 py-2.5 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                  >
+                    401(k) Compounder
+                  </button>
+                  <button
+                    data-tab="tab-401k-withdrawal"
+                    class="nav-link w-full text-left px-8 py-2.5 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                  >
+                    401(k) Withdrawal Sim
+                  </button>
+                </div>
+              </div>
+
+              <!-- Sub-Category: Roth IRA -->
+              <div class="space-y-2">
+                <h4
+                  class="px-8 text-[10px] font-bold text-slate-600 uppercase tracking-widest"
+                >
+                  Roth IRA Planning
+                </h4>
+                <div class="flex flex-col space-y-1">
+                  <button
+                    data-tab="tab-roth"
+                    class="nav-link w-full text-left px-8 py-2.5 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                  >
+                    Roth IRA Compounder
+                  </button>
+                  <button
+                    data-tab="tab-roth-withdrawal"
+                    class="nav-link w-full text-left px-8 py-2.5 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+                  >
+                    Roth IRA Withdrawal Sim
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Category: Property Management -->
+          <div class="space-y-3">
+            <h3
+              class="sidebar-header px-4 text-xs font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2"
+            >
+              <svg
+                class="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                />
+              </svg>
+              Property Management
+            </h3>
+            <div class="flex flex-col space-y-1">
+              <button
+                data-tab="tab-property"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Property Entry
+              </button>
+              <button
+                data-tab="tab-extrapayments"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Extra Payments
+              </button>
+              <button
+                data-tab="tab-property-details"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Property Details
+              </button>
+              <button
+                data-tab="tab-split"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Mortgage Kill Shot
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Tab Content Container -->
+      <div class="flex-1 overflow-y-auto custom-scrollbar p-6">
+        <!-- TAB: Property Entry -->
+        <div
+          id="tab-property"
+          class="tab-content hidden max-w-[1200px] mx-auto space-y-6"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+            >
+              <strong class="text-brand-300">Property Entry:</strong>
+              Log your real estate assets here. Track type, original loan value,
+              interest rate, and term to build accurate amortization schedules
+              for your Net Worth projections over time.
+            </p>
+          </div>
+
+          <!-- Form Block -->
+          <div
+            class="bg-dark-panel border border-dark-border rounded-xl shadow-2xl p-6"
+          >
+            <h2 class="text-xl font-bold text-white mb-4">
+              Add or Edit Property
+            </h2>
+            <form id="propertyForm" class="space-y-4">
+              <input type="hidden" id="propId" value="" />
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1"
+                  >Property Type</label
+                >
+                <select
+                  id="propType"
+                  required
+                  class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                >
+                  <option value="Primary Residence">Primary Residence</option>
+                  <option value="Vacation Home">Vacation Home</option>
+                  <option value="Rental Property">Rental Property</option>
+                </select>
+              </div>
+              <div class="space-y-3">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Street Address</label
+                  >
+                  <input
+                    type="text"
+                    id="propAddress"
+                    placeholder="e.g. 123 Main St"
+                    required
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  />
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                  <div class="md:col-span-1">
+                    <label class="block text-xs font-medium text-slate-300 mb-1"
+                      >City</label
+                    >
+                    <input
+                      type="text"
+                      id="propCity"
+                      placeholder="e.g. Austin"
+                      required
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1"
+                      >State</label
+                    >
+                    <input
+                      type="text"
+                      id="propState"
+                      placeholder="e.g. TX"
+                      required
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1"
+                      >Zipcode</label
+                    >
+                    <input
+                      type="text"
+                      id="propZip"
+                      placeholder="e.g. 78701"
+                      required
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1"
+                  >Date of Purchase</label
+                >
+                <input
+                  type="date"
+                  id="propPurchaseDate"
+                  required
+                  class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-slate-300 mb-1"
+                  >Purchase Price ($)</label
+                >
+                <input
+                  type="text"
+                  id="propPurchasePrice"
+                  required
+                  class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Loan Start Date</label
+                  >
+                  <input
+                    type="date"
+                    id="propLoanDate"
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Loan Term (Mos)</label
+                  >
+                  <input
+                    type="number"
+                    id="propLoanTerm"
+                    value="360"
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  />
+                </div>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Payment Freq</label
+                  >
+                  <select
+                    id="propPayFreq"
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  >
+                    <option value="Monthly">Monthly</option>
+                    <option value="Bi-Weekly">Bi-Weekly</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Initial Loan ($)</label
+                  >
+                  <input
+                    type="text"
+                    id="propInitLoan"
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Interest Rate (%)</label
+                  >
+                  <input
+                    type="number"
+                    step="0.001"
+                    id="propRate"
+                    value="6.5"
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Loan Type</label
+                  >
+                  <select
+                    id="propLoanType"
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  >
+                    <option value="Conventional">Conventional</option>
+                    <option value="ARM">ARM</option>
+                    <option value="VA">VA</option>
+                    <option value="FHA">FHA</option>
+                  </select>
+                </div>
+              </div>
+
+
+              <!-- Reality Check / Reconciliation -->
+              <div class="border-t border-dark-border/30 pt-4 mt-2">
+                <h4
+                  class="text-[10px] uppercase tracking-widest text-brand-400 font-bold mb-3"
+                >
+                  Reality Check (Reconciliation)
+                </h4>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1"
+                      >Reconciled Balance ($)</label
+                    >
+                    <input
+                      type="text"
+                      id="propReconciledBalance"
+                      placeholder="Current stmt balance"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1"
+                      >Reconciliation Date</label
+                    >
+                    <input
+                      type="date"
+                      id="propReconciliationDate"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                    />
+                  </div>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-2 italic font-mono">
+                  If set, the amortization engine will start its projection from
+                  this balance/date instead of the purchase date.
+                </p>
+              </div>
+              <button
+                type="button"
+                id="btnSaveProperty"
+                class="w-full mt-4 bg-brand-600 hover:bg-brand-500 text-white font-bold py-2 rounded transition-colors shadow-lg"
+              >
+                Save Property
+              </button>
+            </form>
+          </div>
+
+          <!-- Table Block -->
+          <div
+            class="bg-dark-panel border border-dark-border rounded-xl shadow-2xl p-6 overflow-x-auto"
+          >
+            <h2 class="text-xl font-bold text-white mb-4">Saved Properties</h2>
+            <table class="w-full text-left border-collapse text-sm">
+              <thead>
+                <tr class="text-slate-400 border-b border-dark-border">
+                  <th class="w-12 py-2"></th>
+                  <th class="py-2 pr-4 font-semibold uppercase tracking-wider">
+                    Type
+                  </th>
+                  <th class="py-2 pr-4 font-semibold uppercase tracking-wider">
+                    Address
+                  </th>
+                  <th
+                    class="py-2 pr-4 font-semibold uppercase tracking-wider text-right"
+                  >
+                    Purchase Price
+                  </th>
+                  <th
+                    class="py-2 pr-4 font-semibold uppercase tracking-wider text-right"
+                  >
+                    Int. Rate
+                  </th>
+                  <th
+                    class="py-2 font-semibold uppercase tracking-wider text-center"
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                id="tbProperties"
+                class="text-slate-300 divide-y divide-dark-border/50"
+              >
+                <!-- Populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- TAB: Extra Payments -->
+        <div
+          id="tab-extrapayments"
+          class="tab-content hidden max-w-[1200px] mx-auto space-y-6"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+            >
+              <strong class="text-brand-300">Extra Principal Payments:</strong>
+              Log additional payments applied strictly to the principal balance
+              of any tracked property. These accelerate amortization
+              calculations for early payoff tracking.
+            </p>
+          </div>
+
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Form Block -->
+            <div
+              class="bg-dark-panel border border-dark-border rounded-xl shadow-2xl p-6 xl:col-span-1"
+            >
+              <h2 class="text-xl font-bold text-white mb-4">
+                Record Extra Payment
+              </h2>
+              <form id="extraPaymentForm" class="space-y-4">
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Select Property</label
+                  >
+                  <select
+                    id="epPropertySelect"
+                    required
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  >
+                    <option value="">-- Choose Property --</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Date of Payment</label
+                  >
+                  <input
+                    type="date"
+                    id="epDate"
+                    required
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-300 mb-1"
+                    >Amount ($)</label
+                  >
+                  <input
+                    type="text"
+                    id="epAmount"
+                    required
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+                  />
+                </div>
+                <button
+                  type="button"
+                  id="btnSaveExtraPayment"
+                  class="w-full mt-4 bg-brand-600 hover:bg-brand-500 text-white font-bold py-2 rounded transition-colors shadow-lg"
+                >
+                  Save Payment
+                </button>
+              </form>
+            </div>
+
+            <!-- Table Block -->
+            <div
+              class="bg-dark-panel border border-dark-border rounded-xl shadow-2xl p-6 xl:col-span-2 overflow-x-auto"
+            >
+              <h2 class="text-xl font-bold text-white mb-4">Payment Ledger</h2>
+              <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                  <tr class="text-slate-400 border-b border-dark-border">
+                    <th
+                      class="py-2 pr-4 font-semibold uppercase tracking-wider"
+                    >
+                      Date
+                    </th>
+                    <th
+                      class="py-2 pr-4 font-semibold uppercase tracking-wider"
+                    >
+                      Property
+                    </th>
+                    <th
+                      class="py-2 pr-4 font-semibold uppercase tracking-wider text-right"
+                    >
+                      Amount Applied
+                    </th>
+                    <th
+                      class="py-2 font-semibold uppercase tracking-wider text-center"
+                    >
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="tbExtraPayments"
+                  class="text-slate-300 divide-y divide-dark-border/50"
+                >
+                  <!-- Populated dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 8: Paystub Entry -->
+        <div
+          id="tab-paystub"
+          class="tab-content hidden max-w-[800px] mx-auto space-y-6"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+            >
+              <strong class="text-brand-300">Paystub Entry:</strong>
+              Capture real-world paystub data to track your actual earnings,
+              taxes, and deductions over time. This tab auto-populates
+              expectations from your Global Settings but allows for precise
+              manual overrides.
+            </p>
+          </div>
+          <div
+            class="bg-dark-panel border border-dark-border rounded-xl p-8 shadow-2xl relative overflow-hidden"
+          >
+            <div class="flex justify-between items-center mb-6">
+              <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+                <span class="p-2 bg-brand-500/20 rounded-lg text-brand-400">
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                    />
+                  </svg>
+                </span>
+                Capture New Paystub
+              </h2>
+              <button
+                type="button"
+                id="btnResetPaystubDefaults"
+                class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 py-1.5 px-3 rounded border border-dark-border transition-colors flex items-center gap-1"
+                title="Reset exactly to standard Global Settings"
+              >
+                <svg
+                  class="w-3 h-3"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  ></path>
+                </svg>
+                Reset Defaults
+              </button>
+            </div>
+
+            <form id="paystubForm" class="space-y-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Date and Basic Info -->
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1"
+                      >Pay Date</label
+                    >
+                    <input
+                      type="date"
+                      id="psDate"
+                      class="w-full bg-slate-900 border border-dark-border rounded-lg py-2.5 px-4 text-white outline-none focus:border-brand-500 transition-all text-lg"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1"
+                      >Gross Pay ($)</label
+                    >
+                    <input
+                      type="text"
+                      id="psGross"
+                      placeholder="0.00"
+                      class="w-full bg-slate-900 border border-dark-border rounded-lg py-2.5 px-4 text-white outline-none focus:border-brand-500 transition-all text-lg"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1"
+                      >Extra Pay ($)</label
+                    >
+                    <input
+                      type="text"
+                      id="psExtraPay"
+                      placeholder="0.00"
+                      class="w-full bg-slate-900 border border-dark-border rounded-lg py-2.5 px-4 text-white outline-none focus:border-brand-500 transition-all text-lg"
+                    />
+                  </div>
+                </div>
+
+                <!-- Taxes -->
+                <div
+                  class="space-y-3 p-4 bg-slate-900/50 rounded-lg border border-dark-border/50"
+                >
+                  <h3
+                    class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2"
+                  >
+                    Taxes
+                  </h3>
+                  <div class="grid grid-cols-2 gap-x-6 gap-y-4">
+                    <!-- Left Column: Federal -->
+                    <div class="space-y-4">
+                      <div>
+                        <label
+                          class="block text-[10px] font-medium text-slate-400 mb-1"
+                          >Fed Withholding</label
+                        >
+                        <input
+                          type="text"
+                          id="psFedTax"
+                          placeholder="0.00"
+                          class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-[10px] font-medium text-slate-400 mb-1"
+                          >Fed FICA Med</label
+                        >
+                        <input
+                          type="text"
+                          id="psMedTax"
+                          placeholder="0.00"
+                          class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-[10px] font-medium text-slate-400 mb-1"
+                          >Fed OASDI (SS)</label
+                        >
+                        <input
+                          type="text"
+                          id="psSSTax"
+                          placeholder="0.00"
+                          class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                        />
+                      </div>
+                    </div>
+
+                    <!-- Right Column: State -->
+                    <div class="space-y-4">
+                      <div>
+                        <label
+                          class="block text-[10px] font-medium text-slate-400 mb-1"
+                          >CO Withholding</label
+                        >
+                        <input
+                          type="text"
+                          id="psStateTax"
+                          placeholder="0.00"
+                          class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          class="block text-[10px] font-medium text-slate-400 mb-1"
+                          >State Other / Paid Leave</label
+                        >
+                        <input
+                          type="text"
+                          id="psStateOther"
+                          placeholder="0.00"
+                          class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Deductions -->
+                <div
+                  class="space-y-3 p-4 bg-slate-900/50 rounded-lg border border-dark-border/50"
+                >
+                  <h3
+                    class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2"
+                  >
+                    Deductions
+                  </h3>
+                  <div class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label
+                        class="block text-[10px] font-medium text-slate-400 mb-1"
+                        >Medical Ins.</label
+                      >
+                      <input
+                        type="text"
+                        id="psMedIns"
+                        placeholder="0.00"
+                        class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[10px] font-medium text-slate-400 mb-1"
+                        >Dental Ins.</label
+                      >
+                      <input
+                        type="text"
+                        id="psDenIns"
+                        placeholder="0.00"
+                        class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[10px] font-medium text-slate-400 mb-1"
+                        >Vision Ins.</label
+                      >
+                      <input
+                        type="text"
+                        id="psVisIns"
+                        placeholder="0.00"
+                        class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[10px] font-medium text-slate-400 mb-1"
+                        >Life Ins.</label
+                      >
+                      <input
+                        type="text"
+                        id="psLifeIns"
+                        placeholder="0.00"
+                        class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[10px] font-medium text-slate-400 mb-1"
+                        >HSA Contribution</label
+                      >
+                      <input
+                        type="text"
+                        id="psHsa"
+                        placeholder="0.00"
+                        class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        class="block text-[10px] font-medium text-slate-400 mb-1"
+                        >Other</label
+                      >
+                      <input
+                        type="text"
+                        id="psOtherIns"
+                        placeholder="0.00"
+                        class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Retirement & Net -->
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-1"
+                      >401(k) Contribution ($)</label
+                    >
+                    <input
+                      type="text"
+                      id="ps401k"
+                      placeholder="0.00"
+                      class="w-full bg-slate-900 border border-dark-border rounded-lg py-2.5 px-4 text-white outline-none focus:border-brand-500 transition-all text-lg"
+                    />
+                  </div>
+                  <div class="pt-2 border-t border-dark-border mt-4">
+                    <label
+                      class="block text-lg font-bold text-brand-400 mb-1 flex justify-between items-center"
+                      ><span>Net Pay ($)</span>
+                      <span
+                        class="text-[10px] uppercase tracking-widest px-2 py-0.5 bg-brand-500/20 rounded"
+                        >Auto-calculated</span
+                      ></label
+                    >
+                    <input
+                      type="text"
+                      id="psNet"
+                      placeholder="0.00"
+                      class="w-full bg-brand-500/10 border-2 border-brand-500/30 rounded-lg py-3 px-4 text-brand-400 outline-none focus:border-brand-500 transition-all text-2xl font-black"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <!-- General Notes -->
+              <div class="pt-2">
+                <label class="block text-sm font-medium text-slate-300 mb-1"
+                  >Notes / Description</label
+                >
+                <textarea
+                  id="psNotes"
+                  rows="2"
+                  class="w-full bg-slate-900 border border-dark-border rounded-lg py-2.5 px-4 text-white outline-none focus:border-brand-500 transition-all resize-none"
+                  placeholder="e.g. Q3 Bonus included..."
+                ></textarea>
+              </div>
+
+              <div class="flex justify-end pt-6">
+                <button
+                  type="submit"
+                  class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold py-3 px-10 rounded-xl transition-all active:scale-95 shadow-lg shadow-brand-500/20 group"
+                >
+                  <svg
+                    class="w-5 h-5 group-hover:rotate-12 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
+                    />
+                  </svg>
+                  Save Paystub Entry
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- TAB 1: Raise Allocation -->
+        <div
+          id="tab-split"
+          class="tab-content max-w-[1400px] mx-auto space-y-6"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+            >
+              <strong class="text-brand-300"
+                >Raise Allocation (The Kill Shot):</strong
+              >
+              Models a strategy where exactly 50% of your annual
+              <span class="italic">net raise</span> (after taxes and deductions)
+              is diverted into a taxable brokerage account rather than being
+              absorbed by lifestyle inflation. The goal is to build liquidity to
+              eventually cleanly pay off your remaining mortgage in a single
+              transaction (the "Kill Shot").
+            </p>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30"
+            >
+              <h2 class="text-lg font-semibold mb-4 text-brand-400">
+                The "Kill Shot" Timeline
+              </h2>
+              <div class="h-64 sm:h-80"><canvas id="chartSplit"></canvas></div>
+            </div>
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30 flex flex-col justify-center items-center text-center"
+            >
+              <div class="text-sm font-medium text-slate-400 mb-1">
+                Mortgage Crossover Expected In
+              </div>
+              <div
+                id="outSplitCrossover"
+                class="text-4xl font-bold text-white mb-4"
+              >
+                -- Yrs -- Mos
+              </div>
+              <div
+                id="outSplitBadge"
+                class="px-4 py-1.5 rounded-full bg-brand-500/20 text-brand-400 text-sm font-medium border border-brand-500/30 opacity-0 transition-opacity"
+              >
+                The "Kill Shot" Achieved
+              </div>
+              <div class="mt-8 text-sm font-medium text-slate-400 mb-1">
+                Fixed Monthly Mortgage Payment
+              </div>
+              <div
+                id="outSplitMoPayment"
+                class="text-2xl font-semibold text-white mb-6"
+              >
+                $--
+              </div>
+              <div class="text-sm font-medium text-slate-400 mb-1">
+                Projected Interest Saved
+              </div>
+              <div
+                id="outSplitInterestSaved"
+                class="text-2xl font-semibold text-green-400"
+              >
+                $--
+              </div>
+            </div>
+          </div>
+          <!-- Legacy Table ported over -->
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden"
+          >
+            <div class="p-4 border-b border-dark-border bg-slate-900/50">
+              <h3 class="font-semibold">
+                Year-by-Year Projection (50% Raise Allocation)
+              </h3>
+            </div>
+            <div class="overflow-x-auto">
+              <table
+                class="w-full text-left border-collapse text-sm whitespace-nowrap"
+              >
+                <thead
+                  class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
+                >
+                  <tr>
+                    <th class="py-3 px-4">Year</th>
+                    <th class="py-3 px-4">Age</th>
+                    <th class="py-3 px-4 text-right">Gross Salary</th>
+                    <th class="py-3 px-4 text-right text-brand-400">
+                      50% Net Raise
+                    </th>
+                    <th class="py-3 px-4 text-right text-brand-400">
+                      Total Mo. Addition
+                    </th>
+                    <th class="py-3 px-4 text-right bg-slate-800/50">
+                      Brokerage Acct Bal
+                    </th>
+                    <th class="py-3 px-4 text-right">Mortgage Bal</th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="tbSplit"
+                  class="divide-y divide-dark-border/50 font-mono align-middle"
+                >
+                  <tr>
+                    <td colspan="6" class="text-center py-6 text-slate-500">
+                      Calculating...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: 401(k) Compounder -->
+        <div id="tab-401k" class="tab-content max-w-[1400px] mx-auto space-y-6">
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+            >
+              <strong class="text-brand-300"
+                >401(k) Compounder & Rule of 55:</strong
+              >
+              Projects traditional retirement balances factoring in base salary
+              raises, personal contribution percentages, and your company's
+              match rules. Highlights the estimated portfolio values at Age 55
+              (the IRS "Rule of 55" early withdrawal age) and standard
+              retirement at Age 65.
+            </p>
+          </div>
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 p-5 flex flex-wrap gap-4 items-end"
+          >
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Projected Retirement Age</label
+              >
+              <input
+                type="number"
+                id="inpRetirementAge"
+                value="65"
+                class="w-32 bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              />
+            </div>
+            <div class="text-sm text-slate-400 pb-1 italic">
+              Controls the projection timeline for the 401(k) compounder.
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30"
+            >
+              <h2 class="text-lg font-semibold mb-4 text-brand-400">
+                401(k) Balance Growth Projection
+              </h2>
+              <div class="h-64 sm:h-80"><canvas id="chart401k"></canvas></div>
+            </div>
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30 flex flex-col justify-center text-center gap-6"
+            >
+              <div>
+                <div class="text-sm font-medium text-slate-400 mb-1">
+                  Age 55 Balance (Rule of 55)
+                </div>
+                <div id="out401k55" class="text-4xl font-bold text-white">
+                  $--
+                </div>
+              </div>
+              <div class="h-px bg-dark-border/50 w-2/3 mx-auto"></div>
+              <div>
+                <div
+                  id="label401kRet"
+                  class="text-sm font-medium text-slate-400 mb-1"
+                >
+                  Balance at Projected Retirement
+                </div>
+                <div id="out401kRet" class="text-4xl font-bold text-brand-400">
+                  $--
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden"
+          >
+            <div class="overflow-x-auto">
+              <table
+                class="w-full text-left border-collapse text-sm whitespace-nowrap"
+              >
+                <thead
+                  class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
+                >
+                  <tr>
+                    <th class="py-3 px-4">Year</th>
+                    <th class="py-3 px-4">Age</th>
+                    <th class="py-3 px-4 text-right">Gross Salary</th>
+                    <th class="py-3 px-4 text-right">Personal Contrib</th>
+                    <th class="py-3 px-4 text-right">Company Contrib</th>
+                    <th class="py-3 px-4 text-right">Projected Interest</th>
+                    <th class="py-3 px-4 text-right">EOY 401(k) Balance</th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="tb401k"
+                  class="divide-y divide-dark-border/50 font-mono"
+                ></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: 401(k) Withdrawal Simulator -->
+        <div
+          id="tab-401k-withdrawal"
+          class="tab-content max-w-[1400px] mx-auto space-y-6 hidden"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+            >
+              <strong class="text-brand-300"
+                >401(k) Withdrawal Simulator:</strong
+              >
+              Projects the lifespan of your 401(k) balance during retirement
+              based on a specified retirement age and withdrawal rate. It grabs
+              the targeted retirement balance automatically from the 401(k)
+              Compounder.
+            </p>
+          </div>
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 p-5 flex flex-wrap gap-4 items-end"
+          >
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Projected Retirement Age</label
+              >
+              <input
+                type="number"
+                id="inpWithdrawalRetAge"
+                value="65"
+                class="w-32 bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Annual Withdrawal Rate (%)</label
+              >
+              <input
+                type="number"
+                id="inpWithdrawalRate"
+                value="4.0"
+                step="0.1"
+                class="w-32 bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              />
+            </div>
+            <div class="text-sm text-slate-400 pb-1 italic">
+              Uses the balance calculated at this specific age from the 401(k)
+              Compounder tab.
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30"
+            >
+              <h2 class="text-lg font-semibold mb-4 text-brand-400">
+                Retirement Drawdown Projection
+              </h2>
+              <div class="h-64 sm:h-80">
+                <canvas id="chart401kWithdrawal"></canvas>
+              </div>
+            </div>
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30 flex flex-col justify-center text-center gap-6"
+            >
+              <div>
+                <div class="text-sm font-medium text-slate-400 mb-1">
+                  Starting Balance at Age
+                  <span id="outWithdrawalStartAge">--</span>
+                </div>
+                <div
+                  id="outWithdrawalStartBal"
+                  class="text-4xl font-bold text-white"
+                >
+                  $--
+                </div>
+              </div>
+              <div class="h-px w-2/3 mx-auto bg-dark-border block"></div>
+              <div>
+                <div
+                  id="lblWithdrawalResult"
+                  class="text-sm font-medium text-slate-400 mb-1"
+                >
+                  Years Until Depleted
+                </div>
+                <div
+                  id="outWithdrawalResultVal"
+                  class="text-4xl font-bold text-red-400"
+                >
+                  --
+                </div>
+                <div
+                  id="lblWithdrawalResultSub"
+                  class="text-xs text-slate-400 mt-2 hover:text-white transition-colors"
+                >
+                  Depleted at Age <span id="outWithdrawalDepleteAge">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden"
+          >
+            <div class="overflow-x-auto custom-scrollbar">
+              <table
+                class="w-full text-left border-collapse text-sm whitespace-nowrap"
+              >
+                <thead
+                  class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
+                >
+                  <tr>
+                    <th class="py-3 px-4 font-semibold w-24">Year</th>
+                    <th class="py-3 px-4 font-semibold w-24">Age</th>
+                    <th class="py-3 px-4 font-semibold text-right">
+                      Start Bal
+                    </th>
+                    <th
+                      class="py-3 px-4 font-semibold text-right text-brand-400"
+                    >
+                      Growth
+                    </th>
+                    <th class="py-3 px-4 font-semibold text-right text-red-400">
+                      Withdrawal
+                    </th>
+                    <th
+                      class="py-3 px-4 font-semibold text-right text-slate-200"
+                    >
+                      End Bal
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="tb401kWithdrawal"
+                  class="divide-y divide-dark-border/50 font-mono"
+                ></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Roth IRA Compounder -->
+        <div
+          id="tab-roth"
+          class="tab-content max-w-[1400px] mx-auto space-y-6 hidden"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+            >
+              <strong class="text-brand-300">Roth IRA Compounder:</strong>
+              Projects Roth IRA balance growth based on initial balance and the
+              projected annual growth rate. This models your tax-free retirement
+              growth over time.
+            </p>
+          </div>
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 p-5 flex flex-wrap gap-4 items-end"
+          >
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Projected Retirement Age</label
+              >
+              <input
+                type="number"
+                id="inpRothRetirementAge"
+                value="65"
+                class="w-32 bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              />
+            </div>
+            <div class="text-sm text-slate-400 pb-1 italic">
+              Controls the projection timeline for the Roth IRA compounder.
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30"
+            >
+              <h2 class="text-lg font-semibold mb-4 text-brand-400">
+                Roth IRA Growth Projection
+              </h2>
+              <div class="h-64 sm:h-80"><canvas id="chartRoth"></canvas></div>
+            </div>
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30 flex flex-col justify-center text-center gap-6"
+            >
+              <div>
+                <div class="text-sm font-medium text-slate-400 mb-1">
+                  Age 55 Balance
+                </div>
+                <div id="outRoth55" class="text-4xl font-bold text-white">
+                  $--
+                </div>
+              </div>
+              <div class="h-px bg-dark-border/50 w-2/3 mx-auto"></div>
+              <div>
+                <div
+                  id="labelRothRet"
+                  class="text-sm font-medium text-slate-400 mb-1"
+                >
+                  Balance at Projected Retirement
+                </div>
+                <div id="outRothRet" class="text-4xl font-bold text-brand-400">
+                  $--
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden"
+          >
+            <div class="overflow-x-auto">
+              <table
+                class="w-full text-left border-collapse text-sm whitespace-nowrap"
+              >
+                <thead
+                  class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
+                >
+                  <tr>
+                    <th class="py-3 px-4">Year</th>
+                    <th class="py-3 px-4">Age</th>
+                    <th class="py-3 px-4 text-right">Projected Interest</th>
+                    <th class="py-3 px-4 text-right">EOY Roth IRA Balance</th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="tbRoth"
+                  class="divide-y divide-dark-border/50 font-mono"
+                ></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Roth IRA Withdrawal Simulator -->
+        <div
+          id="tab-roth-withdrawal"
+          class="tab-content max-w-[1400px] mx-auto space-y-6 hidden"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+            >
+              <strong class="text-brand-300"
+                >Roth IRA Withdrawal Simulator:</strong
+              >
+              Projects the lifespan of your Roth IRA balance during retirement
+              based on a specified retirement age and withdrawal rate.
+            </p>
+          </div>
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 p-5 flex flex-wrap gap-4 items-end"
+          >
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Projected Retirement Age</label
+              >
+              <input
+                type="number"
+                id="inpRothWithdrawalRetAge"
+                value="65"
+                class="w-32 bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Annual Withdrawal Rate (%)</label
+              >
+              <input
+                type="number"
+                id="inpRothWithdrawalRate"
+                value="4.0"
+                step="0.1"
+                class="w-32 bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              />
+            </div>
+            <div class="text-sm text-slate-400 pb-1 italic">
+              Uses the balance calculated at this specific age from the Roth IRA
+              Compounder tab.
+            </div>
+          </div>
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30"
+            >
+              <h2 class="text-lg font-semibold mb-4 text-brand-400">
+                Roth Drawdown Projection
+              </h2>
+              <div class="h-64 sm:h-80">
+                <canvas id="chartRothWithdrawal"></canvas>
+              </div>
+            </div>
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30 flex flex-col justify-center text-center gap-6"
+            >
+              <div>
+                <div class="text-sm font-medium text-slate-400 mb-1">
+                  Starting Balance at Age
+                  <span id="outRothWithdrawalStartAge">--</span>
+                </div>
+                <div
+                  id="outRothWithdrawalStartBal"
+                  class="text-4xl font-bold text-white"
+                >
+                  $--
+                </div>
+              </div>
+              <div class="h-px w-2/3 mx-auto bg-dark-border block"></div>
+              <div>
+                <div
+                  id="lblRothWithdrawalResult"
+                  class="text-sm font-medium text-slate-400 mb-1"
+                >
+                  Years Until Depleted
+                </div>
+                <div
+                  id="outRothWithdrawalResultVal"
+                  class="text-4xl font-bold text-red-400"
+                >
+                  --
+                </div>
+                <div
+                  id="lblRothWithdrawalResultSub"
+                  class="text-xs text-slate-400 mt-2 hover:text-white transition-colors"
+                >
+                  Depleted at Age
+                  <span id="outRothWithdrawalDepleteAge">--</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden"
+          >
+            <div class="overflow-x-auto custom-scrollbar">
+              <table
+                class="w-full text-left border-collapse text-sm whitespace-nowrap"
+              >
+                <thead
+                  class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
+                >
+                  <tr>
+                    <th class="py-3 px-4 font-semibold w-24">Year</th>
+                    <th class="py-3 px-4 font-semibold w-24">Age</th>
+                    <th class="py-3 px-4 font-semibold text-right">
+                      Start Bal
+                    </th>
+                    <th
+                      class="py-3 px-4 font-semibold text-right text-brand-400"
+                    >
+                      Growth
+                    </th>
+                    <th class="py-3 px-4 font-semibold text-right text-red-400">
+                      Withdrawal
+                    </th>
+                    <th
+                      class="py-3 px-4 font-semibold text-right text-slate-200"
+                    >
+                      End Bal
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="tbRothWithdrawal"
+                  class="divide-y divide-dark-border/50 font-mono"
+                ></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 0: Dashboard Home -->
+        <div
+          id="tab-home"
+          class="tab-content active max-w-[1240px] mx-auto space-y-10"
+        >
+          <!-- Hero Section -->
+          <div
+            class="relative overflow-hidden rounded-3xl border border-dark-border shadow-2xl"
+          >
+            <img
+              src="assets/home_hero_bg.png"
+              alt="Hero Background"
+              class="absolute inset-0 w-full h-full object-cover opacity-60 scale-105"
+            />
+            <div
+              class="absolute inset-0 bg-gradient-to-r from-dark-bg via-dark-bg/40 to-transparent"
+            ></div>
+            <div class="relative z-10 p-12 space-y-4">
+              <div
+                class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/20 text-brand-400 text-xs font-bold uppercase tracking-wider"
+              >
+                <span
+                  class="w-1.5 h-1.5 rounded-full bg-brand-500 animate-pulse"
+                ></span>
+                System Operational
+              </div>
+              <h1
+                class="text-5xl font-black text-white tracking-tight leading-tight"
+              >
+                Welcome to your <br />
+                <span
+                  class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 to-brand-600"
+                  >Financial Control Center</span
+                >
+              </h1>
+              <p class="text-slate-400 max-w-xl text-lg leading-relaxed">
+                Take control of your financial future with advanced tracking,
+                data-driven projections, and a strategic methodology designed
+                for wealth optimization.
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick Metrics Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="glass-panel p-6 border border-dark-border hover:border-brand-500/30 transition-all group"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span
+                  class="text-xs font-bold text-slate-500 uppercase tracking-widest"
+                  >Total Estimated Net Worth</span
+                >
+                <div
+                  class="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-white transition-all"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div id="home-networth" class="text-3xl font-black text-white">
+                $0.00
+              </div>
+              <div class="mt-1 text-[10px] text-slate-500 italic">
+                Combined sum of all liquid and investment accounts.
+              </div>
+            </div>
+            <div
+              class="glass-panel p-6 border border-dark-border hover:border-brand-500/30 transition-all group"
+            >
+              <div class="flex items-center justify-between mb-2">
+                <span
+                  class="text-xs font-bold text-slate-500 uppercase tracking-widest"
+                  >Effective Pay Rate</span
+                >
+                <div
+                  class="w-8 h-8 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-400 group-hover:bg-brand-500 group-hover:text-white transition-all"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div id="home-hourly" class="text-3xl font-black text-white">
+                $0.00/hr
+              </div>
+              <div class="mt-1 text-[10px] text-slate-500 italic">
+                Based on standard 40-hour week and total burden calculation.
+              </div>
+            </div>
+            <div
+              class="glass-panel p-6 border border-dark-border hover:border-brand-500/30 transition-all group text-right"
+            >
+              <div
+                class="flex items-center justify-between mb-2 flex-row-reverse text-right"
+              >
+                <span
+                  class="text-xs font-bold text-slate-500 uppercase tracking-widest"
+                  >Retirement Savings Rate</span
+                >
+                <div
+                  class="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center text-orange-400 group-hover:bg-orange-500 group-hover:text-white transition-all"
+                >
+                  <svg
+                    class="w-4 h-4"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
+                  </svg>
+                </div>
+              </div>
+              <div id="home-savings" class="text-3xl font-black text-white">
+                0.0%
+              </div>
+              <div class="mt-1 text-[10px] text-slate-500 italic">
+                Targeting standard healthy accumulation thresholds.
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Navigation Section -->
+          <div class="space-y-6">
+            <h2
+              class="text-sm font-bold text-slate-500 uppercase tracking-[0.2em]"
+            >
+              Quick Access Modules
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <!-- Card 1 -->
+              <button
+                onclick="
+                  document.querySelector('[data-tab=tab-observability]').click()
+                "
+                class="glass-panel p-8 border border-dark-border hover:border-brand-500/50 hover:bg-brand-500/5 transition-all group text-left"
+              >
+                <div
+                  class="w-12 h-12 rounded-2xl bg-brand-500/10 flex items-center justify-center text-brand-400 mb-6 group-hover:scale-110 transition-transform"
+                >
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                    />
+                  </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">
+                  Analyze Income
+                </h3>
+                <p class="text-sm text-slate-500 leading-relaxed">
+                  Visualize your cash flow pipeline, monthly breakdowns, and YTD
+                  accumulation metrics.
+                </p>
+              </button>
+              <!-- Card 2 -->
+              <button
+                onclick="
+                  document.querySelector('[data-tab=tab-salary]').click()
+                "
+                class="glass-panel p-8 border border-dark-border hover:border-emerald-500/50 hover:bg-emerald-500/5 transition-all group text-left"
+              >
+                <div
+                  class="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-400 mb-6 group-hover:scale-110 transition-transform"
+                >
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
+                  </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">
+                  Project Growth
+                </h3>
+                <p class="text-sm text-slate-500 leading-relaxed">
+                  Forecast your future earnings trajectory based on raises and
+                  standard accumulation logic.
+                </p>
+              </button>
+              <!-- Card 3 -->
+              <button
+                onclick="
+                  document.querySelector('[data-tab=tab-historical]').click()
+                "
+                class="glass-panel p-8 border border-dark-border hover:border-amber-500/50 hover:bg-amber-500/5 transition-all group text-left"
+              >
+                <div
+                  class="w-12 h-12 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-400 mb-6 group-hover:scale-110 transition-transform"
+                >
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <h3 class="text-xl font-bold text-white mb-2">Review Ledger</h3>
+                <p class="text-sm text-slate-500 leading-relaxed">
+                  Audit your historical paystub data and view aggregated annual
+                  summary roll-ups.
+                </p>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 4: Salary Forecaster -->
+        <div
+          id="tab-salary"
+          class="tab-content max-w-[1200px] mx-auto space-y-6"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+            >
+              <strong class="text-brand-300">Salary & Bonus Forecaster:</strong>
+              A straightforward calculation isolating your future gross,
+              base-only earnings trajectory assuming your global expected raise
+              inputs. It also layers on variable discretionary bonus income
+              based on a fixed percentage target.
+            </p>
+          </div>
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 p-5 flex flex-wrap gap-4 items-end"
+          >
+            <div>
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Target Annual Bonus (%)</label
+              >
+              <input
+                type="number"
+                id="inpBonus"
+                value="10"
+                step="1"
+                class="w-32 bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              />
+            </div>
+            <div class="text-sm text-slate-400 pb-1 italic">
+              Calculates standard 25-year projection based on base salary logic.
+            </div>
+          </div>
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden"
+          >
+            <div class="overflow-x-auto">
+              <table
+                class="w-full text-left border-collapse text-sm whitespace-nowrap"
+              >
+                <thead
+                  class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
+                >
+                  <tr>
+                    <th class="py-3 px-4">Year</th>
+                    <th class="py-3 px-4">Age</th>
+                    <th class="py-3 px-4 text-right">Base Salary</th>
+                    <th class="py-3 px-4 text-right">Est. Bonus</th>
+                    <th class="py-3 px-4 text-right text-brand-400 font-bold">
+                      Total Comp
+                    </th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="tbSalary"
+                  class="divide-y divide-dark-border/50 font-mono"
+                ></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Property Details -->
+        <div
+          id="tab-property-details"
+          class="tab-content hidden max-w-[1400px] mx-auto space-y-6"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+            >
+              <strong class="text-brand-300">Property Details:</strong>
+              Select a property to view its specific financial trajectory,
+              valuation history, and amortization schedule. Visualize equity
+              growth over time against your loan balance.
+            </p>
+          </div>
+          <!-- Selection & Overview: 2-row full-width header -->
+          <div class="flex flex-col gap-3">
+
+            <!-- Row 1: Property Selector + 4 Loan KPIs (5 equal columns) -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+
+              <!-- Select Property -->
+              <div class="glass-panel border border-dark-border p-4 rounded-xl bg-dark-panel/30 flex flex-col justify-between min-w-0">
+                <label class="text-[10px] uppercase tracking-widest text-slate-400 font-bold block mb-2">Select Property</label>
+                <select
+                  id="detailsPropertySelect"
+                  class="w-full bg-slate-900 border border-dark-border rounded py-2 px-3 text-white outline-none focus:border-brand-500 text-sm"
+                >
+                  <option value="">-- Choose Property --</option>
+                </select>
+              </div>
+
+              <!-- Purchase Price -->
+              <div class="glass-panel border border-brand-500/20 bg-brand-500/5 p-4 rounded-xl min-w-0">
+                <span class="text-[10px] uppercase tracking-widest text-brand-400 font-bold block mb-1">Purchase Price</span>
+                <span id="outDetailsPurchasePrice" class="text-lg font-bold text-white font-mono truncate block">$0.00</span>
+              </div>
+
+              <!-- Interest Rate -->
+              <div class="glass-panel border border-brand-500/20 bg-brand-500/5 p-4 rounded-xl min-w-0">
+                <span class="text-[10px] uppercase tracking-widest text-brand-400 font-bold block mb-1">Interest Rate</span>
+                <span id="outDetailsInterestRate" class="text-lg font-bold text-white font-mono truncate block">0.00%</span>
+              </div>
+
+              <!-- Monthly Payment -->
+              <div class="glass-panel border border-brand-500/20 bg-brand-500/5 p-4 rounded-xl min-w-0">
+                <span class="text-[10px] uppercase tracking-widest text-brand-400 font-bold block mb-1">Monthly Payment</span>
+                <span id="outDetailsMonthlyPmt" class="text-lg font-bold text-white font-mono truncate block">$0.00</span>
+              </div>
+
+              <!-- Remaining Balance -->
+              <div class="glass-panel border border-red-500/30 bg-red-500/5 p-4 rounded-xl min-w-0">
+                <span class="text-[10px] uppercase tracking-widest text-red-400 font-bold block mb-1">Remaining Balance</span>
+                <span id="outDetailsRemainingBalance" class="text-lg font-bold text-red-300 font-mono truncate block">$0.00</span>
+              </div>
+            </div>
+
+            <!-- Row 2: Equity Panel (left) + Payment Breakdown (right) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+              <!-- Equity Panel -->
+              <div class="glass-panel border border-emerald-500/20 bg-emerald-500/5 p-4 rounded-xl flex flex-col justify-between">
+                <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-bold block mb-2">Est. Current Equity</span>
+                <div>
+                  <span id="outDetailsEquity" class="text-3xl font-bold text-emerald-300 font-mono block leading-tight">$0.00</span>
+                  <span id="outDetailsEquityPct" class="text-xs text-slate-400 font-mono block mt-1">0.0% owned</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-emerald-500/10">
+                  <div>
+                    <span class="text-[9px] text-slate-500 uppercase tracking-wider block mb-0.5">Est. Value</span>
+                    <span id="outDetailsEstValue" class="text-sm text-slate-300 font-mono font-bold">$0.00</span>
+                  </div>
+                  <div>
+                    <span class="text-[9px] text-slate-500 uppercase tracking-wider block mb-0.5">Payoff Date</span>
+                    <span id="outDetailsPayoffDate" class="text-sm text-slate-300 font-mono font-bold">—</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Accurate Payment Breakdown (2/3 width) -->
+              <div class="md:col-span-2 glass-panel border border-dark-border bg-slate-900/40 p-4 rounded-xl flex flex-col justify-between">
+                <h4 class="text-[10px] uppercase tracking-widest text-slate-400 font-bold mb-3 border-b border-dark-border/30 pb-2">
+                  Accurate Payment Breakdown
+                  <span class="text-slate-600 font-normal normal-case tracking-normal ml-1">(from most recent logged payment)</span>
+                </h4>
+                <div class="grid grid-cols-5 gap-3 text-center flex-1 items-center">
+                  <div>
+                    <span class="block text-[9px] text-slate-500 uppercase mb-1">Principal</span>
+                    <span id="outDetailsMonthlyPrincipal" class="text-sm font-bold text-brand-300">$0</span>
+                  </div>
+                  <div>
+                    <span class="block text-[9px] text-slate-500 uppercase mb-1">Interest</span>
+                    <span id="outDetailsMonthlyInterest" class="text-sm font-bold text-brand-300">$0</span>
+                  </div>
+                  <div>
+                    <span class="block text-[9px] text-slate-500 uppercase mb-1">Tax</span>
+                    <span id="outDetailsMonthlyTax" class="text-sm font-bold text-slate-300">$0</span>
+                  </div>
+                  <div>
+                    <span class="block text-[9px] text-slate-500 uppercase mb-1">Insurance</span>
+                    <span id="outDetailsMonthlyInsurance" class="text-sm font-bold text-slate-300">$0</span>
+                  </div>
+                  <div>
+                    <span class="block text-[9px] text-slate-500 uppercase mb-1">Overage</span>
+                    <span id="outDetailsMonthlyOverage" class="text-sm font-bold text-slate-300">$0</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Equity Growth Chart -->
+          <div
+            class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30"
+          >
+            <h2
+              class="text-lg font-semibold mb-4 text-brand-400 flex items-center gap-2"
+            >
+              <svg
+                class="w-5 h-5"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                ></path>
+              </svg>
+              Equity Growth & Loan Amortization
+            </h2>
+            <div class="h-80"><canvas id="chartEquityGrowth"></canvas></div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Property Valuations History Chart -->
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30"
+            >
+              <h2
+                class="text-lg font-semibold mb-4 text-brand-400 flex items-center gap-2"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  ></path>
+                </svg>
+                Valuation History (Daily)
+              </h2>
+              <div class="h-64 sm:h-80">
+                <canvas id="chartPropertyValuations"></canvas>
+              </div>
+            </div>
+
+            <!-- Strategy Impact Metrics -->
+            <div class="space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div
+                  class="glass-panel border border-green-500/30 bg-green-500/5 p-5 rounded-xl flex flex-col items-center justify-center text-center"
+                >
+                  <span
+                    class="text-[10px] uppercase tracking-widest text-green-400 font-bold mb-1"
+                    >Interest Saved</span
+                  >
+                  <span
+                    id="outMortgageInterestSaved"
+                    class="text-3xl font-bold text-white font-mono"
+                    >$0</span
+                  >
+                </div>
+                <div
+                  class="glass-panel border border-brand-500/30 bg-brand-500/5 p-5 rounded-xl flex flex-col items-center justify-center text-center"
+                >
+                  <span
+                    class="text-[10px] uppercase tracking-widest text-brand-300 font-bold mb-1"
+                    >Payoff Accelerated By</span
+                  >
+                  <span
+                    id="outMortgageYearsSaved"
+                    class="text-3xl font-bold text-white font-mono"
+                    >0 Years</span
+                  >
+                </div>
+              </div>
+
+              <!-- Mini Amortization chart or another stat? -->
+              <div
+                class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30"
+              >
+                <h2 class="text-lg font-semibold mb-4 text-brand-400">
+                  Principal vs Interest Paid
+                </h2>
+                <div class="h-44"><canvas id="chartMortgage"></canvas></div>
+              </div>
+
+              <!-- Escrow Trends Chart -->
+              <div
+                class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30"
+              >
+                <h2 class="text-lg font-semibold mb-4 text-brand-400">
+                  Escrow Trends (Tax & Insurance)
+                </h2>
+                <div class="h-44"><canvas id="chartEscrowTrends"></canvas></div>
+              </div>
+            </div>
+          </div>
+          <!-- Monthly Payment Logging & History -->
+          <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <!-- Logging Form -->
+            <div
+              class="xl:col-span-1 glass-panel border border-brand-500/20 p-5 rounded-xl bg-dark-panel/30"
+            >
+              <h3
+                class="text-sm font-bold text-brand-400 uppercase tracking-widest mb-4 flex items-center gap-2"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                Log Actual Monthly Payment
+              </h3>
+              <form id="loanPaymentForm" class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      class="block text-[10px] uppercase font-medium text-slate-400 mb-1"
+                      >Due Date</label
+                    >
+                    <input
+                      type="date"
+                      id="lpDate"
+                      required
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white text-sm outline-none focus:border-brand-500"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[10px] uppercase font-medium text-slate-400 mb-1"
+                      >Total Pmt</label
+                    >
+                    <input
+                      type="text"
+                      id="lpTotal"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white text-sm outline-none focus:border-brand-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      class="block text-[10px] uppercase font-medium text-slate-400 mb-1 text-brand-300"
+                      >Principal</label
+                    >
+                    <input
+                      type="text"
+                      id="lpPrincipal"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white text-sm outline-none focus:border-brand-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[10px] uppercase font-medium text-slate-400 mb-1 text-brand-300"
+                      >Interest</label
+                    >
+                    <input
+                      type="text"
+                      id="lpInterest"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white text-sm outline-none focus:border-brand-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                  <div>
+                    <label
+                      class="block text-[10px] uppercase font-medium text-slate-400 mb-1"
+                      >Tax</label
+                    >
+                    <input
+                      type="text"
+                      id="lpTax"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white text-sm outline-none focus:border-brand-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[10px] uppercase font-medium text-slate-400 mb-1"
+                      >Ins.</label
+                    >
+                    <input
+                      type="text"
+                      id="lpInsurance"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white text-sm outline-none focus:border-brand-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      class="block text-[10px] uppercase font-medium text-slate-400 mb-1"
+                      >Over.</label
+                    >
+                    <input
+                      type="text"
+                      id="lpOverage"
+                      class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white text-sm outline-none focus:border-brand-500"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label
+                    class="block text-[10px] uppercase font-medium text-slate-400 mb-1"
+                    >Notes</label
+                  >
+                  <input
+                    type="text"
+                    id="lpNotes"
+                    class="w-full bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white text-sm outline-none focus:border-brand-500"
+                    placeholder="Optional notes..."
+                  />
+                </div>
+                <button
+                  type="submit"
+                  id="btnLogLoanPayment"
+                  class="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-2 rounded-lg transition-all shadow-lg hover:shadow-brand-500/20"
+                >
+                  Log Monthly Payment
+                </button>
+              </form>
+            </div>
+
+            <!-- Payment History -->
+            <div
+              class="xl:col-span-2 glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30 overflow-hidden"
+            >
+              <h3
+                class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"
+              >
+                <svg
+                  class="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+                Monthly Payment History
+              </h3>
+              <div class="overflow-x-auto max-h-[350px]">
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead
+                    class="sticky top-0 bg-slate-900 text-slate-500 uppercase tracking-wider font-bold border-b border-dark-border/50"
+                  >
+                    <tr>
+                      <th class="py-2 px-2">Date</th>
+                      <th class="py-2 px-2 text-right text-brand-300">
+                        Principal
+                      </th>
+                      <th class="py-2 px-2 text-right text-brand-300">
+                        Interest
+                      </th>
+                      <th class="py-2 px-2 text-right">Tax</th>
+                      <th class="py-2 px-2 text-right">Ins.</th>
+                      <th class="py-2 px-2 text-right">Over.</th>
+                      <th class="py-2 px-2 text-right font-bold text-white">
+                        Total
+                      </th>
+                      <th class="py-2 px-2 text-center">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="tbLoanPayments"
+                    class="divide-y divide-dark-border/30 font-mono"
+                  >
+                    <!-- Populated dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed Amortization Table -->
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden"
+          >
+            <div class="overflow-x-auto">
+              <table
+                class="w-full text-left border-collapse text-sm whitespace-nowrap"
+              >
+                <thead
+                  class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
+                >
+                  <tr>
+                    <th class="py-3 px-4">Year</th>
+                    <th class="py-3 px-4">Age</th>
+                    <th class="py-3 px-4 text-right">Beginning Bal</th>
+                    <th class="py-3 px-4 text-right text-green-400">
+                      Principal Paid
+                    </th>
+                    <th class="py-3 px-4 text-right text-red-400">
+                      Interest Paid
+                    </th>
+                    <th class="py-3 px-4 text-right">Ending Bal</th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="tbMortgage"
+                  class="divide-y divide-dark-border/50 font-mono"
+                ></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: Total Net Worth Stack -->
+        <div
+          id="tab-networth"
+          class="tab-content max-w-[1400px] mx-auto space-y-6"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+            >
+              <strong class="text-brand-300"
+                >Total Net Worth Composition:</strong
+              >
+              Macro view aggregating all assets dynamically computed from the
+              other tabs. It factors in Taxable Raise Allocation balances,
+              401(k) growth, and steadily building Home Equity (valuing the home
+              on a static 2% annual appreciation minus debt load).
+            </p>
+          </div>
+          <div
+            class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30"
+          >
+            <h2 class="text-lg font-semibold mb-4 text-brand-400">
+              Net Worth Composition (25 Years)
+            </h2>
+            <div class="h-[400px] sm:h-[500px]">
+              <canvas id="chartNetWorth"></canvas>
+            </div>
+            <p class="text-xs text-slate-400 text-center mt-4">
+              Home Value appreciates at 2% YoY based on Start Value (Remaining
+              Mortgage Balance assumed starting equity base, plus appreciation).
+            </p>
+          </div>
+        </div>
+
+        <!-- TAB 7: Historical Ledger -->
+        <div
+          id="tab-historical"
+          class="tab-content max-w-[1400px] mx-auto space-y-6"
+        >
+          <div class="flex justify-between items-end mb-4">
+            <div
+              class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 flex-1 mr-4"
+            >
+              <p
+                class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
+              >
+                <strong class="text-brand-300">Historical Data Ledger:</strong>
+                Records point-in-time snapshots of your core financial balances.
+                Capture your current view to seed the database and build a
+                long-term trajectory of your actual baseline.
+              </p>
+            </div>
+            <button
+              id="btnCaptureSnapshot"
+              class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 whitespace-nowrap mb-1"
+            >
+              Capture Current View
+            </button>
+          </div>
+
+          <div class="mt-8 space-y-4">
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span
+                class="w-8 h-8 bg-brand-500/20 rounded flex items-center justify-center text-brand-400"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+              </span>
+              Historical Snapshots Table
+            </h2>
+          </div>
+
+          <div
+            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden mt-4"
+          >
+            <div class="overflow-x-auto">
+              <table
+                class="w-full text-left border-collapse text-sm whitespace-nowrap"
+              >
+                <thead
+                  class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
+                >
+                  <tr>
+                    <th class="py-3 px-4">Date Captured</th>
+                    <th class="py-3 px-4 text-right">Net Worth</th>
+                    <th class="py-3 px-4 text-right">401(k) Balance</th>
+                    <th class="py-3 px-4 text-right">Roth IRA Balance</th>
+                    <th class="py-3 px-4 text-right">
+                      Brokerage Account Balance
+                    </th>
+                    <th class="py-3 px-4 text-right">
+                      Remaining Mortgage Balance
+                    </th>
+                    <th class="w-16 px-4"></th>
+                  </tr>
+                </thead>
+                <tbody
+                  id="tbHistorical"
+                  class="divide-y divide-dark-border/50 font-mono"
+                >
+                  <tr>
+                    <td colspan="6" class="text-center py-6 text-slate-500">
+                      Loading historical data...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Detailed Wages -->
+          <div class="mt-8 space-y-4">
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span
+                class="w-8 h-8 bg-brand-500/20 rounded flex items-center justify-center text-brand-400"
+              >
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                  />
+                </svg>
+              </span>
+              Detailed Wages
+            </h2>
+            <div
+              class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden"
+            >
+              <div class="overflow-x-auto">
+                <table
+                  class="w-full text-left border-collapse text-sm whitespace-nowrap"
+                >
+                  <thead
+                    class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
+                  >
+                    <tr>
+                      <th class="w-16 px-4"></th>
+                      <th
+                        class="py-3 px-4 text-xs font-bold text-slate-500 uppercase"
+                      >
+                        Pay Date
+                      </th>
+                      <th
+                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase"
+                      >
+                        Gross Pay
+                      </th>
+                      <th
+                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-emerald-400"
+                      >
+                        Extra Pay
+                      </th>
+                      <th
+                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-red-400"
+                      >
+                        Taxes
+                      </th>
+                      <th
+                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-amber-500"
+                      >
+                        Ins./HSA
+                      </th>
+                      <th
+                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-brand-400"
+                      >
+                        401k Indiv.
+                      </th>
+                      <th
+                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-brand-600 bg-slate-800/10"
+                      >
+                        401k Match
+                      </th>
+                      <th
+                        class="py-3 px-4 text-right text-xs font-bold text-white uppercase"
+                      >
+                        Net Pay
+                      </th>
+                      <th
+                        class="py-3 px-4 text-right text-[10px] font-bold text-slate-600 uppercase italic"
+                      >
+                        Rate
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="tbPaystubs"
+                    class="divide-y divide-dark-border/50 font-mono"
+                  >
+                    <tr>
+                      <td colspan="8" class="text-center py-6 text-slate-500">
+                        Loading paystubs...
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 8: Wealth Growth (Actuals vs Projections) -->
+        <div id="tab-wealth-actuals" class="tab-content max-w-[1400px] mx-auto space-y-6">
+          <div class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2 flex justify-between items-start">
+            <div class="max-w-3xl">
+              <h2 class="text-lg font-semibold text-brand-300 mb-1 flex items-center gap-2">
+                Wealth Growth Analysis
+                <span class="text-[10px] font-normal text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded border border-slate-700">Actual vs Projection</span>
+              </h2>
+              <p class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium">
+                Compare your actual gathered wealth data (Snapshots, Paystubs,
+                Property Valuations) against your long-term projected trajectory.
+                Toggle timeframes to see your progress from a microscopic daily
+                view to a macroscopic yearly growth curve.
+              </p>
+            </div>
+            <div class="text-right flex flex-col items-end gap-3 min-w-[200px]">
+              <button 
+                onclick="console.log('Manual refresh clicked'); window.calcWealthActuals(); renderCharts('tab-wealth-actuals');"
+                class="px-3 py-1.5 bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 text-xs font-semibold rounded-lg border border-brand-500/30 transition-all flex items-center gap-2"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                Refresh Data
+              </button>
+              <div>
+                <label class="block text-[10px] font-bold text-slate-500 mb-1 uppercase tracking-widest">Timeframe</label>
+                <select
+                  id="inpWealthTimeframe"
+                  class="w-32 bg-slate-900 border border-dark-border rounded py-1 px-3 text-brand-300 text-xs outline-none focus:border-brand-500 transition-colors"
+                >
+                  <option value="daily">Daily</option>
+                  <option value="weekly">Weekly</option>
+                  <option value="monthly" selected>Monthly</option>
+                  <option value="quarterly">Quarterly</option>
+                  <option value="yearly">Yearly</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Main Chart -->
+          <div
+            class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30 shadow-lg"
+          >
+            <h2
+              class="text-lg font-semibold mb-4 text-brand-400 flex items-center justify-between"
+            >
+              <div class="flex items-center gap-2">
+                <span>Actual vs. Projected Wealth Growth</span>
+                <div class="relative group cursor-help flex items-center mt-0.5">
+                  <svg
+                    class="w-4 h-4 text-slate-500 hover:text-brand-400 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  <div
+                    class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-72 p-3 bg-slate-800 text-xs text-slate-300 rounded shadow-xl border border-slate-700 z-50 font-normal leading-relaxed pointer-events-none"
+                  >
+                    Visualizes your actual Net Worth (from Snapshots and Paystub
+                    accumulation) and Property Equity against the mathematical
+                    projections from the Net Worth Stack.
+                  </div>
+                </div>
+              </div>
+            </h2>
+            <div class="h-[500px] w-full relative">
+              <canvas id="chartWealthActuals"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 9: Income Observability Dashboard -->
+        <div
+          id="tab-observability"
+          class="tab-content max-w-[1400px] mx-auto space-y-6"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2 flex justify-between items-start"
+          >
+            <p
+              class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium max-w-3xl"
+            >
+              <strong class="text-brand-300">Income Observability:</strong>
+              Interactive analytics of your historical paystub data. Discover
+              where your money actually goes with precise flows of your taxes,
+              deductions, and investments over chosen timeframes.
+            </p>
+            <div class="mt-2 text-right">
+              <label class="block text-xs font-medium text-slate-300 mb-1"
+                >Filter By Year</label
+              >
+              <select
+                id="inpDashboardYear"
+                class="w-32 bg-slate-900 border border-dark-border rounded py-1.5 px-3 text-white outline-none focus:border-brand-500"
+              >
+                <option value="All">All Time</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div
+              class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 p-5 flex flex-col justify-center items-center text-center shadow-lg hover:border-brand-500/50 transition-colors"
+            >
+              <div
+                class="text-sm font-medium text-slate-400 mb-1 flex items-center gap-1 justify-center"
+              >
+                <span>Effective Tax Rate</span>
+                <div class="relative group cursor-help flex items-center">
+                  <svg
+                    class="w-3.5 h-3.5 text-slate-500 hover:text-red-400 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  <div
+                    class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-64 p-3 bg-slate-800 text-xs text-slate-300 rounded shadow-xl border border-slate-700 z-50 font-normal leading-relaxed pointer-events-none text-left"
+                  >
+                    The percentage of your Total Gross Pay that goes towards
+                    taxes (Federal, State, Social Security, Medicare, etc).
+                  </div>
+                </div>
+              </div>
+              <div id="kpiTaxRate" class="text-3xl font-bold text-red-400">
+                --%
+              </div>
+              <div class="text-xs text-slate-500 mt-1">
+                Total Taxes / Total Gross
+              </div>
+            </div>
+            <div
+              class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 p-5 flex flex-col justify-center items-center text-center shadow-lg hover:border-brand-500/50 transition-colors"
+            >
+              <div
+                class="text-sm font-medium text-slate-400 mb-1 flex items-center gap-1 justify-center"
+              >
+                <span>Benefits / Insurance Burden</span>
+                <div class="relative group cursor-help flex items-center">
+                  <svg
+                    class="w-3.5 h-3.5 text-slate-500 hover:text-amber-400 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  <div
+                    class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-64 p-3 bg-slate-800 text-xs text-slate-300 rounded shadow-xl border border-slate-700 z-50 font-normal leading-relaxed pointer-events-none text-left"
+                  >
+                    The percentage of your Total Gross Pay spent on
+                    employer-sponsored benefits and insurance premiums (Medical,
+                    Dental, Vision, Life, HSA).
+                  </div>
+                </div>
+              </div>
+              <div id="kpiInsRate" class="text-3xl font-bold text-amber-400">
+                --%
+              </div>
+              <div class="text-xs text-slate-500 mt-1">
+                Total Ins & Ded / Total Gross
+              </div>
+            </div>
+            <div
+              class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 p-5 flex flex-col justify-center items-center text-center shadow-lg hover:border-brand-500/50 transition-colors"
+            >
+              <div
+                class="text-sm font-medium text-slate-400 mb-1 flex items-center gap-1 justify-center"
+              >
+                <span>Retirement Savings Rate</span>
+                <div class="relative group cursor-help flex items-center">
+                  <svg
+                    class="w-3.5 h-3.5 text-slate-500 hover:text-brand-400 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    ></path>
+                  </svg>
+                  <div
+                    class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block w-64 p-3 bg-slate-800 text-xs text-slate-300 rounded shadow-xl border border-slate-700 z-50 font-normal leading-relaxed pointer-events-none text-left"
+                  >
+                    The percentage of your Total Gross Pay actively contributed
+                    to your 401(k) or equivalent retirement accounts.
+                  </div>
+                </div>
+              </div>
+              <div id="kpiRetRate" class="text-3xl font-bold text-brand-400">
+                --%
+              </div>
+              <div class="text-xs text-slate-500 mt-1">
+                Total 401(k) / Total Gross
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Cash Flow Pipeline (Horizontal Bar) -->
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30 shadow-lg"
+            >
+              <h2
+                class="text-lg font-semibold mb-4 text-brand-400 flex items-center justify-between"
+              >
+                <div class="flex items-center gap-2">
+                  <span>The Cash Flow Pipeline</span>
+                  <div
+                    class="relative group cursor-help flex items-center mt-0.5"
+                  >
+                    <svg
+                      class="w-4 h-4 text-slate-500 hover:text-brand-400 transition-colors"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                    <div
+                      class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-72 p-3 bg-slate-800 text-xs text-slate-300 rounded shadow-xl border border-slate-700 z-50 font-normal leading-relaxed pointer-events-none"
+                    >
+                      Visualizes how your Total Gross Pay is distributed. Gross
+                      Pay is the sum of Base Salary and Extra Pay. It flows into
+                      Taxes (Federal, State, Social Security, Medicare),
+                      Benefits/Insurance (Medical, Dental, Vision, Life, HSA),
+                      Retirement 401(k) Contributions, and finally what remains
+                      is your Net Pay.
+                    </div>
+                  </div>
+                </div>
+                <span
+                  class="text-xs font-normal text-slate-400 bg-slate-800 px-2 py-0.5 rounded"
+                  >Gross vs Deductions</span
+                >
+              </h2>
+              <div class="h-64 sm:h-80 w-full relative">
+                <canvas id="chartCashFlow"></canvas>
+              </div>
+            </div>
+
+            <!-- Gross vs. Net vs. Deductions (Monthly Stacked Bar) -->
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30 shadow-lg"
+            >
+              <h2
+                class="text-lg font-semibold mb-4 text-brand-400 flex items-center justify-between"
+              >
+                <div class="flex items-center gap-2">
+                  <span>Monthly Income Breakdown</span>
+                  <div
+                    class="relative group cursor-help flex items-center mt-0.5"
+                  >
+                    <svg
+                      class="w-4 h-4 text-slate-500 hover:text-brand-400 transition-colors"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                    <div
+                      class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-72 p-3 bg-slate-800 text-xs text-slate-300 rounded shadow-xl border border-slate-700 z-50 font-normal leading-relaxed pointer-events-none"
+                    >
+                      A stacked bar chart showing your total compensation
+                      distribution per month. The total height of the bar
+                      represents Gross Pay. It breaks down the portions
+                      allocated to Net Pay, 401(k) Contributions,
+                      Insurance/Deductions, and Taxes.
+                    </div>
+                  </div>
+                </div>
+                <span
+                  class="text-xs font-normal text-slate-400 bg-slate-800 px-2 py-0.5 rounded"
+                  >Net + Burden = Gross</span
+                >
+              </h2>
+              <div class="h-64 sm:h-80 w-full relative">
+                <canvas id="chartMonthlyBars"></canvas>
+              </div>
+            </div>
+
+            <!-- YTD Accumulation (Area Chart) -->
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30 shadow-lg"
+            >
+              <h2
+                class="text-lg font-semibold mb-4 text-brand-400 flex items-center justify-between"
+              >
+                <div class="flex items-center gap-2">
+                  <span>Cumulative YTD Accumulation</span>
+                  <div
+                    class="relative group cursor-help flex items-center mt-0.5"
+                  >
+                    <svg
+                      class="w-4 h-4 text-slate-500 hover:text-brand-400 transition-colors"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                    <div
+                      class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-72 p-3 bg-slate-800 text-xs text-slate-300 rounded shadow-xl border border-slate-700 z-50 font-normal leading-relaxed pointer-events-none"
+                    >
+                      Tracks your Year-To-Date (YTD) running totals. It shows
+                      the compounding accumulation of your Gross Pay, Net Pay,
+                      Taxes, and 401(k) Contributions over the plotted
+                      timeframe. Useful for seeing the pacing of your earnings
+                      and burdens.
+                    </div>
+                  </div>
+                </div>
+                <span
+                  class="text-xs font-normal text-slate-400 bg-slate-800 px-2 py-0.5 rounded"
+                  >Pacing Tracker</span
+                >
+              </h2>
+              <div class="h-64 sm:h-80 w-full relative">
+                <canvas id="chartYtdArea"></canvas>
+              </div>
+            </div>
+
+            <!-- The 50/50 Strategy Delta Tracker (Year-over-Year) -->
+            <div
+              class="glass-panel border border-dark-border p-5 rounded-xl bg-dark-panel/30 shadow-lg"
+            >
+              <h2
+                class="text-lg font-semibold mb-4 text-brand-400 flex items-center justify-between"
+              >
+                <div class="flex items-center gap-2">
+                  <span>Net Pay Year-over-Year (The Raise Delta)</span>
+                  <div
+                    class="relative group cursor-help flex items-center mt-0.5"
+                  >
+                    <svg
+                      class="w-4 h-4 text-slate-500 hover:text-brand-400 transition-colors"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      ></path>
+                    </svg>
+                    <div
+                      class="absolute bottom-full left-0 mb-2 hidden group-hover:block w-72 p-3 bg-slate-800 text-xs text-slate-300 rounded shadow-xl border border-slate-700 z-50 font-normal leading-relaxed pointer-events-none"
+                    >
+                      Tracks the year-over-year difference in your Net Pay (The
+                      'Raise Delta'). It visualizes the '50/50 Strategy',
+                      demonstrating allocating 50% of your net pay increase to
+                      wealth-building investments and 50% to lifestyle
+                      enhancement.
+                    </div>
+                  </div>
+                </div>
+                <span
+                  class="text-xs font-normal text-slate-400 bg-slate-800 px-2 py-0.5 rounded"
+                  >Avoid Lifestyle Creep</span
+                >
+              </h2>
+              <div
+                class="h-64 sm:h-80 w-full relative flex items-center justify-center"
+              >
+                <canvas id="chartYoYDelta"></canvas>
+                <div
+                  id="chartYoYEmptyState"
+                  class="absolute inset-0 flex items-center justify-center hidden"
+                >
+                  <span
+                    class="text-sm font-medium text-slate-500 bg-slate-900/80 px-4 py-2 rounded-lg backdrop-blur-sm border border-dark-border"
+                    >Select "All Time" to view YoY comparisons.</span
+                  >
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="app.js?v=11"></script>
+  </body>
+</html>

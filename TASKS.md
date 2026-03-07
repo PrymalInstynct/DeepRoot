@@ -1,0 +1,75 @@
+# Tasks
+
+- [x] 2026-03-04: Upgrade financial dashboard to full-stack application (FastAPI, PostgreSQL, Worker, Docker Compose).
+- [x] 2026-03-06: Refactored Property Details tab to merge Mortgage Amortization functionality, including new Equity Growth and Valuation History visualizations.
+- [x] 2026-03-03: Create the 50/50 Liquidity Split interactive web app with Vanilla JS and Tailwind CSS.
+
+## Discovered During Work
+
+- [x] 2026-03-04: Update README.md to reflect the new Full-Stack Architecture.
+- [x] Phase 2: Complicate with real-world granular flat-rate deductions (Fed/State/Insurance).
+- [x] Phase 2.1: Convert 401k deduction scale to a percentage-based formula rather than fixed dollar amount.
+- [x] Phase 2.2: Zero out the mortgage balance visually upon crossover, and mathematically deduct the remaining balance directly from the total investment pool.
+- [x] Phase 2.3: Fix the logic that flags the CSS crossover highlight, as the previous logic relied on the mortgage balance remaining > 0 on that row.
+- [x] Phase 3: Convert to single-page, multi-tab financial dashboard with Chart.js and centralized state.
+- [x] Phase 3.1: Transform the projection tables and charts to output current calendar years (e.g., 2026, 2027) instead of elapsed years (Y1, Y2).
+- [x] Phase 3.2: Add descriptive text to the UI explaining the purpose and logic of each tab.
+- [x] Phase 3.3: Replace "Current Age" with a "Date of Birth" global input, computing current age dynamically for the timeline charts and tables.
+- [x] Phase 3.4: Re-format the Base Salary input to automatically format thousands commas as the user types (e.g. 150,000).
+- [x] Phase 3.5: Add a "Projected Retirement Age" input specifically for the 401(k) Compounder timeline.
+- [x] Phase 3.6: Update the "Age 65 Balance" UI on the 401(k) tab to dynamically say "Balance at Projected Retirement (Age X)" based on the user's input.
+- [x] Debug Property Save Error <!-- id: 1 -->
+- [x] Fix Property Persistence across sessions <!-- id: 2 -->
+- [x] Ensure Property Valuations & Growth Chart updates <!-- id: 3 -->
+- [x] Ensure Mortgage Amortization Tab updates <!-- id: 4 -->
+- [x] Ensure Mortgage Kill Shot Tab updates <!-- id: 5 -->
+- [x] Phase 3.7: Refactored the Mortgage Amortization calculator to calculate to term instead of using the global 25 year timeline, and to split the final year of repayment into individual months.
+- [x] Phase 3.8: Aggregate the granular final-year monthly mortgage projection rows into a single annual bar on the Total Mortgage chart to simplify visualization, while preserving the detailed monthly table view below.
+- [x] Phase 3.9: Split the 'Remaining Mortgage Term' global input into distinct 'Years' and 'Months' parameters for more accurate scenario modeling.
+- [x] Phase 3.10: Add a "Projected Interest Saved" readout to the 50/50 Liquidity Split tab that calculates the interest saved by executing the Kill Shot early.
+- [x] Phase 3.11: Rename the "50/50 Liquidity Split" tab to "Mortgage Kill Shot" to better contextualize its purpose to the user.
+- [x] Phase 3.12: Update `README.md` to document the new multi-tab architecture, dynamic timeline generation, targeted retirement compounding, and granular mortgage payoff logic.
+- [x] Phase 3.13: Rewrite the Background Math & Strategy section in `README.md` to explicitly detail all five distinct dashboard tools rather than exclusively focusing on the Raise Allocation strategy.
+- [x] Phase 3.14: Expand the top-level concept summary in `README.md` to establish the project as a macro-level wealth dashboard rather than just a 50/50 split calculator.
+- [x] Phase 3.15: Create the completely new "401(k) Withdrawal" tab that dynamically models drawdown strategies and portfolio lifespan based on the 401(k) Compounder's targeted ending balance.
+- [x] Phase 3.16: Enforce an Age 99 ceiling limit on the Withdrawal projection. If funds are not fully depleted by age 99, automatically swap the UI output from "Years Until Depleted" to "Remaining Balance at 99".
+- [x] Phase 3.17: Normalize the data projection tables across all 5 tabs to consistently lead with "Year" and "Age" as their respective first and second columns.
+- [x] Phase 3.18: Fix the "Age NaN" bug in the projection tables by ensuring the parsed variable of the user's Date of Birth is properly stored in the global render state.
+- [x] Phase 3.19: Fix the "Age + 1" bug in the 401(k) Compounder logic to ensure it begins projections synchronously with the user's current exact age like the rest of the dashboard tabs.
+- [x] Phase 3.20: Rename the legacy `50-50-liquidity-split/` directory to `financial-planning-dashboard/` to accurately reflect its expanded scope.
+- [x] Phase 3.21: Re-order the dashboard UI and `README.md` documentation into a logical sequence starting with base Salary projection and ending with Total Net Worth aggregation.
+- [x] Phase 3.22: Implement real-time comma formatting (toLocaleString) on the "Current 401(k) Bal", "Taxable Inv. Start Bal", and "Rem. Mortgage Bal" input fields.
+- [x] Phase 3.23: Update the Insurance Premium input to be calculated dynamically per pay-period rather than as a fixed 12-month value.
+- [x] Phase 3.24: Relocate the "Current 401(k) Bal" input out of the Taxable block and place it side-by-side with a condensed "Proj. Growth" slider under the Retirement 401(k) category natively.
+- [x] Phase 3.25: Audit `README.md` and document new features including the 6th tab, age normalization on tables, withdrawal limits, comma formatting, and pay period scaling.
+- [x] Phase 3.26: Add "Advanced Mode" toggles to the 'Taxes & Deductions' and 'Mortgage Debt' global settings sections to allow inputting exact pay-stub specific deduction numbers and mortgage Escrow numbers.
+- [x] Phase 3.27: Break down "Insurance Premiums" into four exact-value sub-categories (Medical, Dental, Vision, Life) when the Advanced Tax Mode is toggled.
+- [x] Phase 3.28: Rewrite the Javascript comma-parsing regex logic so that inputs accept and preserve decimals while dynamically injecting thousands-separators, instead of destructively replacing the `.` character.
+- [x] Phase 3.29: Split the 401(k) Compounder's `Tot. Ann. Contrib` table column into `Personal Contrib` and `Company Contrib` for independent visibility into funding sources.
+- [x] Phase 3.30: Inject a `Projected Interest` column into the 401(k) Compounder table specifically exposing the amount scaling from organic yield prior to adding to the EOY balance.
+- [x] Phase 3.31: Revert the descriptive text above the `Salary & Bonus Forecaster` tab table back to "Calculates standard 25-year projection".
+- [x] Phase 3.32: Rewrite the Net Worth Stack data rendering loop to track 401(k) balances dynamically by Age so the line correctly persists and pulls from the drawdown arrays post-retirement.
+- [x] Phase 4: Full-Stack migration with PostgreSQL persistence for Global Settings and Historical Snapshots.
+- [x] Phase 5: Implement "Paystub Entry" tab to capture and ledger granular pay stub data (Gross, Taxes, HSA, Insurance, 401k) into the historical database.
+- [x] Phase 5.1: Refine Paystub fields to include generic "State Other" taxes and explicit "HSA Contribution" tracking.
+- [x] Phase 5.2: Resolve frontend-to-backend "save race condition" with `isInitialLoad` guard and robust null-safety.
+- [x] Phase 5.3: Include "Other" insurance deduction in the Paystub Entry Net Pay calculation and API sync to the DB.
+- [x] Phase 5.4: Reorder Paystub Entry 'Taxes' input fields into a dual-column layout separating Federal from State.
+- [x] Phase 5.5: Added 'PTO Sell' tracking to the Paystub Entry UI, automated Net Pay calculations, and historical database integration.
+- [x] Phase 5.6: Upgraded Global Settings to include all Paystub fields and implemented a `populatePaystubFromGlobals` auto-fill script for streamlined Entry tabular automation.
+- [x] Phase 5.7: Enhanced Historical Data Paystub Ledger expanded details by adding a 3rd 'Paycheck Details' column to display calculated variants like Hourly Rate, Tax Burden %, and dynamic Company 401(k) Matching.
+- [x] Phase 5.8: Executed a full-stack refactor (DB schema, API models, UI logic) to rename the `PTO Sell ($)` variable to a more versatile `Extra Pay ($)` field.
+- [x] 2026-03-05: Comprehensive Mortgage Overhaul - Decoupled mortgage data from Global Settings into a dedicated `Property` model. Implemented `Property Entry` and `Extra Payments` tabs. Integrated multiple property amortization, extra payments, and 2% appreciation into Net Worth projections.
+- [x] 2026-03-05: Finalized navigation sidebar: Moved Overview to top, merged Mortgage & Debt into Property Management, fixed nesting, and refined styling for a professional appearance.
+- [x] 2026-03-05: Improved Property Entry form: Split address into Street, City, State, and Zipcode fields; corrected nonsensical default values (e.g., address defaulting to "0.00"). Upgraded backend database schema to store address components in separate columns for better data integrity.
+- [x] 2026-03-05: Integrated hybrid amortization strategy: Combined automated baseline calculations with manual reconciliation points and dynamic extra payment tracking. Added "Strategy Impact" dashboard to visualize years/interest saved.
+- [x] 2026-03-05: Refactored Property Entry tab layout: Converted to a 3-column side-by-side view (Form, Table, and Chart) on large screens and ensured sections are dynamically sized for a cleaner, more organized UI.
+- [x] 2026-03-05: Fully implemented automated property valuation fetching using a hybrid approach (RentCast API + Playwright scraping fallback). Successfully integrated with Celery worker for scheduled weekly updates.
+- [x] 2026-03-07: Add delete functionality to the "Historical Snapshot Table" on the Historical Ledger tab.
+- [x] 2026-03-07: Implement "Wealth Growth (Actuals)" tab to visualize actual vs. projected wealth growth across Daily, Weekly, Monthly, and Yearly timeframes.
+- [ ] 2026-03-07: Fix the X axis scale of the "Wealth Growth (Actuals)" tab based on which Timeframe is selected.
+  - [ ] Daily: Show one value per day with a 90 day max duration
+  - [ ] Weekly: Show 1 value per week with a 26 week max duration
+  - [ ] Monthly: Show 1 value per month with a 36 month max duration
+  - [ ] Quarterly: Show 1 value per quarter with a 20 Quarter max duration
+  - [ ] Yearly: Show 1 value per year with a 10 year max duration
