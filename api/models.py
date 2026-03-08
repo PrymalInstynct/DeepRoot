@@ -120,18 +120,6 @@ class Paystub(database.Base):
     notes = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-class HistoricalSnapshot(database.Base):
-    __tablename__ = "historical_snapshots"
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    snapshot_date = Column(Date, nullable=False)
-    net_worth = Column(Float, nullable=False)
-    property_value = Column(Float, nullable=False, default=0.0)
-    balance_401k = Column(Float, nullable=False)
-    investment_balance = Column(Float, nullable=False)
-    mortgage_balance = Column(Float, nullable=False)
-    balance_roth_ira = Column(Float, nullable=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 class LoanPayment(database.Base):
     __tablename__ = "loan_payments"
@@ -158,6 +146,7 @@ class InvestmentAccount(database.Base):
     growth_target = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     valuations = relationship("InvestmentValuation", back_populates="account", cascade="all, delete-orphan")
+    history = relationship("InvestmentHistory", back_populates="account", cascade="all, delete-orphan")
 
 class InvestmentValuation(database.Base):
     __tablename__ = "investment_valuations"
@@ -167,4 +156,13 @@ class InvestmentValuation(database.Base):
     value = Column(Float, nullable=False)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     account = relationship("InvestmentAccount", back_populates="valuations")
+
+class InvestmentHistory(database.Base):
+    __tablename__ = "investment_history"
+    id = Column(Integer, primary_key=True, index=True)
+    investment_account_id = Column(Integer, ForeignKey("investment_accounts.id", ondelete="CASCADE"), nullable=False)
+    record_date = Column(Date, nullable=False)
+    balance = Column(Float, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    account = relationship("InvestmentAccount", back_populates="history")
 

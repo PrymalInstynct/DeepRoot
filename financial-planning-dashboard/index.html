@@ -488,8 +488,7 @@
           </div>
         </div>
       </div>
-        </div>
-      </div>
+
     </header>
 
     <!-- Main Content (Tabs Reorganized into Sidebar) -->
@@ -557,16 +556,16 @@
                 Total Net Worth Stack
               </button>
               <button
-                data-tab="tab-historical"
-                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
-              >
-                Historical Ledger
-              </button>
-              <button
                 data-tab="tab-wealth-actuals"
                 class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
               >
                 Wealth Growth (Actuals)
+              </button>
+              <button
+                data-tab="tab-investment-performance"
+                class="nav-link w-full text-left px-4 py-3 text-sm font-medium text-slate-400 hover:text-white hover:bg-white/5 transition-colors"
+              >
+                Investment Performance
               </button>
               <button
                 data-tab="tab-investments"
@@ -2452,7 +2451,7 @@
               <!-- Card 3 -->
               <button
                 onclick="
-                  document.querySelector('[data-tab=tab-historical]').click()
+                  document.querySelector('[data-tab=tab-investment-performance]').click()
                 "
                 class="glass-panel p-8 border border-dark-border hover:border-amber-500/50 hover:bg-amber-500/5 transition-all group text-left"
               >
@@ -3029,190 +3028,6 @@
           </div>
         </div>
 
-        <!-- TAB 7: Historical Ledger -->
-        <div
-          id="tab-historical"
-          class="tab-content max-w-[1400px] mx-auto space-y-6"
-        >
-          <div class="flex justify-between items-end mb-4">
-            <div
-              class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 flex-1 mr-4"
-            >
-              <p
-                class="text-sm tracking-wide text-brand-100/90 leading-relaxed font-medium"
-              >
-                <strong class="text-brand-300">Historical Data Ledger:</strong>
-                Records point-in-time snapshots of your core financial balances.
-                Capture your current view to seed the database and build a
-                long-term trajectory of your actual baseline.
-              </p>
-            </div>
-            <button
-              id="btnCaptureSnapshot"
-              class="bg-brand-500 hover:bg-brand-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition-transform transform hover:scale-105 whitespace-nowrap mb-1"
-            >
-              Capture Current View
-            </button>
-          </div>
-
-          <div class="mt-8 space-y-4">
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-              <span
-                class="w-8 h-8 bg-brand-500/20 rounded flex items-center justify-center text-brand-400"
-              >
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                  ></path>
-                </svg>
-              </span>
-              Historical Snapshots Table
-            </h2>
-          </div>
-
-          <div
-            class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden mt-4"
-          >
-            <div class="overflow-x-auto">
-              <table
-                class="w-full text-left border-collapse text-sm whitespace-nowrap"
-              >
-                <thead
-                  class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
-                >
-                  <tr>
-                    <th class="py-3 px-4">Date Captured</th>
-                    <th class="py-3 px-4 text-right">Net Worth</th>
-                    <th class="py-3 px-4 text-right">401(k) Balance</th>
-                    <th class="py-3 px-4 text-right">Roth IRA Balance</th>
-                    <th class="py-3 px-4 text-right">
-                      Brokerage Account Balance
-                    </th>
-                    <th class="py-3 px-4 text-right">
-                      Remaining Mortgage Balance
-                    </th>
-                    <th class="w-16 px-4"></th>
-                  </tr>
-                </thead>
-                <tbody
-                  id="tbHistorical"
-                  class="divide-y divide-dark-border/50 font-mono"
-                >
-                  <tr>
-                    <td colspan="6" class="text-center py-6 text-slate-500">
-                      Loading historical data...
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Detailed Wages -->
-          <div class="mt-8 space-y-4">
-            <h2 class="text-xl font-bold text-white flex items-center gap-2">
-              <span
-                class="w-8 h-8 bg-brand-500/20 rounded flex items-center justify-center text-brand-400"
-              >
-                <svg
-                  class="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                  />
-                </svg>
-              </span>
-              Detailed Wages
-            </h2>
-            <div
-              class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden"
-            >
-              <div class="overflow-x-auto">
-                <table
-                  class="w-full text-left border-collapse text-sm whitespace-nowrap"
-                >
-                  <thead
-                    class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
-                  >
-                    <tr>
-                      <th class="w-16 px-4"></th>
-                      <th
-                        class="py-3 px-4 text-xs font-bold text-slate-500 uppercase"
-                      >
-                        Pay Date
-                      </th>
-                      <th
-                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase"
-                      >
-                        Gross Pay
-                      </th>
-                      <th
-                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-emerald-400"
-                      >
-                        Extra Pay
-                      </th>
-                      <th
-                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-red-400"
-                      >
-                        Taxes
-                      </th>
-                      <th
-                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-amber-500"
-                      >
-                        Ins./HSA
-                      </th>
-                      <th
-                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-brand-400"
-                      >
-                        401k Indiv.
-                      </th>
-                      <th
-                        class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-brand-600 bg-slate-800/10"
-                      >
-                        401k Match
-                      </th>
-                      <th
-                        class="py-3 px-4 text-right text-xs font-bold text-white uppercase"
-                      >
-                        Net Pay
-                      </th>
-                      <th
-                        class="py-3 px-4 text-right text-[10px] font-bold text-slate-600 uppercase italic"
-                      >
-                        Rate
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody
-                    id="tbPaystubs"
-                    class="divide-y divide-dark-border/50 font-mono"
-                  >
-                    <tr>
-                      <td colspan="8" class="text-center py-6 text-slate-500">
-                        Loading paystubs...
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
         <!-- TAB 8: Wealth Growth (Actuals vs Projections) -->
         <div id="tab-wealth-actuals" class="tab-content max-w-[1400px] mx-auto space-y-6">
           <div class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-4 mb-2 flex justify-between items-start">
@@ -3289,9 +3104,181 @@
               <canvas id="chartWealthActuals"></canvas>
             </div>
           </div>
+
+          <!-- Detailed Paystub History -->
+          <div class="mt-8 space-y-4">
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <span class="w-8 h-8 bg-brand-500/20 rounded flex items-center justify-center text-brand-400">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+              </span>
+              Detailed Paystub History
+            </h2>
+          </div>
+          <div class="glass-panel border border-dark-border rounded-xl bg-dark-panel/30 overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-sm whitespace-nowrap">
+                <thead class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider">
+                  <tr>
+                    <th class="w-16 px-4"></th>
+                    <th class="py-3 px-4 text-xs font-bold text-slate-500 uppercase">Pay Date</th>
+                    <th class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase">Gross Pay</th>
+                    <th class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-emerald-400">Extra Pay</th>
+                    <th class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-red-400">Taxes</th>
+                    <th class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-amber-500">Ins./HSA</th>
+                    <th class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-brand-400">401k Indiv.</th>
+                    <th class="py-3 px-4 text-right text-xs font-bold text-slate-500 uppercase text-brand-600 bg-slate-800/10">401k Match</th>
+                    <th class="py-3 px-4 text-right text-xs font-bold text-white uppercase">Net Pay</th>
+                    <th class="py-3 px-4 text-right text-[10px] font-bold text-slate-600 uppercase italic">Rate</th>
+                  </tr>
+                </thead>
+                <tbody id="tbPaystubs" class="divide-y divide-dark-border/50 font-mono">
+                  <tr><td colspan="10" class="text-center py-6 text-slate-500">Loading paystubs...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
-        <!-- TAB 9: Income Observability Dashboard -->
+        <!-- TAB 9: Investment Performance -->
+        <div
+          id="tab-investment-performance"
+          class="tab-content hidden max-w-[1400px] mx-auto space-y-6"
+        >
+          <div
+            class="glass-panel border border-brand-500/30 rounded-xl bg-brand-500/5 p-6 flex flex-col md:flex-row justify-between items-center gap-6"
+          >
+            <div class="flex-1">
+              <h1 class="text-2xl font-bold text-white mb-2">
+                Investment Performance
+              </h1>
+              <p class="text-sm text-brand-100/80 leading-relaxed max-w-2xl">
+                Track historical balances and projected growth for individual
+                accounts. Switch to
+                <span class="text-brand-300 font-bold">"All Accounts"</span> to
+                see your total aggregated trajectory.
+              </p>
+            </div>
+            <div class="w-full md:w-64">
+              <label
+                class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-2"
+                >Select Account</label
+              >
+              <select
+                id="invPerfSelect"
+                class="w-full bg-slate-900 border border-dark-border rounded-lg py-2.5 px-4 text-white outline-none focus:border-brand-500 transition-all shadow-xl"
+              >
+                <option value="all">All Accounts (Combined)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- History Logger -->
+          <div
+            class="bg-dark-panel border border-dark-border rounded-xl p-6 shadow-2xl"
+          >
+            <h2
+              class="text-lg font-bold text-white mb-4 flex items-center gap-2"
+            >
+              <span class="p-1.5 bg-emerald-500/20 rounded text-emerald-400">
+                <svg
+                  class="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
+                  ></path>
+                </svg>
+              </span>
+              Log Historical Balance
+            </h2>
+            <form id="formLogInvHistory" class="flex flex-wrap items-end gap-4">
+              <div class="flex-1 min-w-[150px]">
+                <label class="block text-xs font-medium text-slate-400 mb-1"
+                  >Record Date</label
+                >
+                <input
+                  type="date"
+                  id="logInvDate"
+                  required
+                  class="w-full bg-slate-900 border border-dark-border rounded-lg py-2 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+              <div class="flex-1 min-w-[150px]">
+                <label class="block text-xs font-medium text-slate-400 mb-1"
+                  >Balance ($)</label
+                >
+                <input
+                  type="text"
+                  id="logInvBalance"
+                  required
+                  placeholder="0.00"
+                  class="w-full bg-slate-900 border border-dark-border rounded-lg py-2 px-3 text-white outline-none focus:border-brand-500"
+                />
+              </div>
+              <button
+                type="submit"
+                class="bg-brand-600 hover:bg-brand-500 text-white font-bold py-2 px-6 rounded-lg transition-all shadow-lg whitespace-nowrap"
+              >
+                Log Balance
+              </button>
+            </form>
+          </div>
+
+          <!-- Visualizations Grid -->
+          <div class="grid grid-cols-1 gap-6">
+            <!-- Chart Panel -->
+            <div
+              class="bg-dark-panel border border-dark-border rounded-xl p-6 shadow-2xl h-[500px] flex flex-col"
+            >
+              <h2 class="text-lg font-bold text-white mb-4">
+                Historical vs. Projected Growth
+              </h2>
+              <div class="flex-1 relative min-h-0">
+                <canvas id="chartInvPerformance"></canvas>
+              </div>
+            </div>
+
+            <!-- Table Panel -->
+            <div
+              class="bg-dark-panel border border-dark-border rounded-xl p-6 shadow-2xl overflow-hidden"
+            >
+              <h2 class="text-lg font-bold text-white mb-4">
+                Projection Ledger (25 Years)
+              </h2>
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                  <thead
+                    class="bg-slate-900 text-slate-400 text-xs uppercase tracking-wider"
+                  >
+                    <tr>
+                      <th class="py-3 px-4">Year / Date</th>
+                      <th class="py-3 px-4 text-right">Starting Balance</th>
+                      <th class="py-3 px-4 text-right text-emerald-400">
+                        Growth ($)
+                      </th>
+                      <th class="py-3 px-4 text-right font-bold text-white">
+                        Ending Balance
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="tbInvPerformance"
+                    class="divide-y divide-dark-border/50 text-slate-300 font-mono"
+                  >
+                    <!-- Dynamic -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 10: Income Observability Dashboard -->
         <div
           id="tab-observability"
           class="tab-content max-w-[1400px] mx-auto space-y-6"

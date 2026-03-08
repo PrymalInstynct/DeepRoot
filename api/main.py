@@ -72,19 +72,6 @@ class GlobalSettingsResponse(GlobalSettingsUpdate):
     user_id: int
     class Config: from_attributes = True
 
-class HistoricalSnapshotCreate(BaseModel):
-    snapshot_date: date
-    net_worth: float
-    balance_401k: float
-    investment_balance: float
-    mortgage_balance: float
-    balance_roth_ira: float
-    property_value: float = 0.0
-
-class HistoricalSnapshotResponse(HistoricalSnapshotCreate):
-    id: int
-    user_id: int
-    class Config: from_attributes = True
 
 class PaystubCreate(BaseModel):
     pay_date: date
@@ -184,6 +171,16 @@ class InvestmentAccountResponse(InvestmentAccountCreate):
     created_at: datetime
     class Config: from_attributes = True
 
+class InvestmentHistoryCreate(BaseModel):
+    investment_account_id: int
+    record_date: date
+    balance: float
+
+class InvestmentHistoryResponse(InvestmentHistoryCreate):
+    id: int
+    created_at: datetime
+    class Config: from_attributes = True
+
 class InvestmentValuationResponse(BaseModel):
     id: int
     account_id: int
@@ -245,29 +242,6 @@ def get_all_loan_payments(user_id: int = 1, db: Session = Depends(database.get_d
 def get_property_valuations(property_id: int, user_id: int = 1, db: Session = Depends(database.get_db)):
     return db.query(models.PropertyValuation).filter(models.PropertyValuation.property_id == property_id).order_by(models.PropertyValuation.valuation_date.desc()).all()
 
-# --- Historical Snapshots ---
-@app.get("/api/historical", response_model=list[HistoricalSnapshotResponse])
-def get_historical(user_id: int = 1, db: Session = Depends(database.get_db)):
-    return db.query(models.HistoricalSnapshot).filter(
-        models.HistoricalSnapshot.user_id == user_id
-    ).order_by(models.HistoricalSnapshot.snapshot_date.desc()).all()
-
-@app.post("/api/historical", response_model=HistoricalSnapshotResponse)
-def create_historical(snapshot_in: HistoricalSnapshotCreate, user_id: int = 1, db: Session = Depends(database.get_db)):
-    snap = models.HistoricalSnapshot(**snapshot_in.model_dump(), user_id=user_id)
-    db.add(snap); db.commit(); db.refresh(snap)
-    return snap
-
-@app.delete("/api/historical/{snapshot_id}")
-def delete_historical(snapshot_id: int, user_id: int = 1, db: Session = Depends(database.get_db)):
-    snap = db.query(models.HistoricalSnapshot).filter(
-        models.HistoricalSnapshot.id == snapshot_id,
-        models.HistoricalSnapshot.user_id == user_id
-    ).first()
-    if not snap:
-        raise HTTPException(status_code=404, detail="Snapshot not found")
-    db.delete(snap); db.commit()
-    return {"ok": True}
 
 # --- Paystubs ---
 @app.get("/api/paystubs", response_model=list[PaystubResponse])
@@ -418,6 +392,23 @@ def delete_investment(inv_id: int, user_id: int = 1, db: Session = Depends(datab
         raise HTTPException(status_code=404, detail="Investment account not found")
     db.delete(inv); db.commit()
     return {"ok": True}
+
+@app.get("/api/investment-history", response_model=list[InvestmentHistoryResponse])
+def get_investment_history_all(user_id: int = 1, db: Session = Depends(database.get_db)):
+    # Find all accounts for this user
+    acc_ids = [a.id for a in db.query(models.InvestmentAccount.id).filter(models.InvestmentAccount.user_id == user_id).all()]
+    return db.query(models.InvestmentHistory).filter(models.InvestmentHistory.investment_account_id.in_(acc_ids)).order_by(models.InvestmentHistory.record_date.desc()).all()
+
+@app.post("/api/investment-history", response_model=InvestmentHistoryResponse)
+def create_investment_history(hist_in: InvestmentHistoryCreate, user_id: int = 1, db: Session = Depends(database.get_db)):
+    # Verify account ownership
+    acc = db.query(models.InvestmentAccount).filter(models.InvestmentAccount.id == hist_in.investment_account_id, models.InvestmentAccount.user_id == user_id).first()
+    if not acc:
+        raise HTTPException(status_code=404, detail="Investment account not found or access denied")
+    
+    new_hist = models.InvestmentHistory(**hist_in.model_dump())
+    db.add(new_hist); db.commit(); db.refresh(new_hist)
+    return new_hist
 
 if __name__ == "__main__":
     import uvicorn
