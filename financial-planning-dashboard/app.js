@@ -4742,3 +4742,52 @@ const App = (function () {
   document.addEventListener("DOMContentLoaded", () => {
     App.boot();
   });
+
+/**
+ * exportStatement(format)
+ * Calls the backend /api/export/financial-statement endpoint and
+ * triggers a browser file download for the generated document.
+ * @param {string} format - "pdf" or "docx"
+ */
+window.exportStatement = async function (format) {
+  const spinner = document.getElementById("exportSpinner");
+  const btnPdf  = document.getElementById("btnExportPdf");
+  const btnDocx = document.getElementById("btnExportDocx");
+
+  if (spinner)  spinner.classList.remove("hidden");
+  if (btnPdf)   btnPdf.disabled  = true;
+  if (btnDocx)  btnDocx.disabled = true;
+
+  try {
+    const apiBase = (window.location.hostname === "localhost" ||
+                     window.location.hostname === "127.0.0.1")
+      ? "http://localhost:8000"
+      : `${window.location.protocol}//${window.location.hostname.replace(/:\d+$/, "")}:8000`;
+
+    const resp = await fetch(
+      `${apiBase}/api/export/financial-statement?format=${format}&user_id=1`
+    );
+
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error(`Server ${resp.status}: ${err}`);
+    }
+
+    const blob    = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a       = document.createElement("a");
+    a.href        = blobUrl;
+    a.download    = `financial_statement_${new Date().toISOString().slice(0, 10)}.${format}`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch (err) {
+    console.error("Export failed:", err);
+    alert(`Export failed: ${err.message}\n\nPlease ensure the API server is running.`);
+  } finally {
+    if (spinner)  spinner.classList.add("hidden");
+    if (btnPdf)   btnPdf.disabled  = false;
+    if (btnDocx)  btnDocx.disabled = false;
+  }
+};

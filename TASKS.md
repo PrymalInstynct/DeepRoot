@@ -75,3 +75,10 @@
   - [ ] Monthly: Show 1 value per month with a 36 month max duration
   - [ ] Quarterly: Show 1 value per quarter with a 20 Quarter max duration
   - [ ] Yearly: Show 1 value per year with a 10 year max duration
+- [/] 2026-03-08: Implement "Financial Statement Export" feature. Generate a professional Statement of Financial Position (Balance Sheet) from live user data, downloadable as DOCX and PDF.
+  - [/] Add `GET /api/export/financial-statement?format=docx|pdf` endpoint to `api/main.py`
+  - [/] Create `api/export_service.py` with PDF (reportlab) and DOCX (Node.js docx npm) generators
+  - [/] Create `api/generate_statement.js` Node.js script for DOCX generation
+  - [/] Add export button to the dashboard Net Worth / Overview tab in `financial-planning-dashboard/index.html`
+  - [/] Wire frontend downloads in `financial-planning-dashboard/app.js`
+  - [ ] Verify DOCX and PDF output correctness
