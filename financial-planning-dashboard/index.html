@@ -3663,7 +3663,48 @@
             </div>
           </div>
 
-          <!-- Chart Grid -->
+          <!-- Financial Statement Export -->
+          <div class="glass-panel border border-brand-500/30 rounded-xl bg-dark-panel/30 p-5 shadow-lg">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <h2 class="text-base font-semibold text-white flex items-center gap-2">
+                  <svg class="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Statement of Financial Position
+                </h2>
+                <p class="text-xs text-slate-400 mt-0.5">Generate a professional balance sheet from your live data &mdash; assets, liabilities &amp; net worth.</p>
+              </div>
+              <div class="flex items-center gap-3 flex-shrink-0">
+                <!-- Spinner (hidden by default) -->
+                <svg id="exportSpinner" class="hidden w-5 h-5 text-brand-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                </svg>
+                <button
+                  id="btnExportPdf"
+                  onclick="exportStatement('pdf')"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-red-600 hover:bg-red-500 text-white text-sm font-medium transition-colors shadow"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                  </svg>
+                  Download PDF
+                </button>
+                <button
+                  id="btnExportDocx"
+                  onclick="exportStatement('docx')"
+                  class="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-sm font-medium transition-colors shadow"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z" />
+                  </svg>
+                  Download DOCX
+                </button>
+              </div>
+            </div>
+          </div>
+
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Cash Flow Pipeline (Horizontal Bar) -->
             <div

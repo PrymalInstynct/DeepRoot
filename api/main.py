@@ -1,11 +1,14 @@
 import os
 import logging
+import math
 from datetime import date, datetime
 from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 import models
 import database
+import export_service
 
 # Configure structured logging
 logging.basicConfig(
@@ -409,6 +412,139 @@ def create_investment_history(hist_in: InvestmentHistoryCreate, user_id: int = 1
     new_hist = models.InvestmentHistory(**hist_in.model_dump())
     db.add(new_hist); db.commit(); db.refresh(new_hist)
     return new_hist
+
+# ── Financial Statement Export ────────────────────────────────────────────────
+
+def _compute_outstanding_balance(prop: models.Property, as_of: date) -> float:
+    """
+    Estimate the outstanding mortgage balance as of `as_of` using standard
+    amortization.  Falls back gracefully when optional fields are missing.
+    """
+    balance   = prop.reconciled_balance if prop.reconciled_balance else prop.initial_loan_value
+    if not balance:
+        return 0.0
+    rate_annual = prop.interest_rate or 0.0
+    term_months = prop.loan_term_months or 360
+    start_date  = prop.reconciliation_date or prop.loan_start_date
+    if not start_date:
+        return balance
+
+    monthly_rate = rate_annual / 12.0
+
+    # Number of payments that have elapsed since the reconciliation / start date
+    months_elapsed = (
+        (as_of.year - start_date.year) * 12 + (as_of.month - start_date.month)
+    )
+    months_elapsed = max(0, months_elapsed)
+
+    if monthly_rate == 0:
+        # Zero-interest loan
+        payment = balance / term_months
+        return max(0.0, balance - payment * months_elapsed)
+
+    # Standard amortization payment
+    payment = balance * (monthly_rate * (1 + monthly_rate) ** term_months) / \
+              ((1 + monthly_rate) ** term_months - 1)
+
+    # Balance after months_elapsed payments
+    remaining = balance * (1 + monthly_rate) ** months_elapsed - \
+                payment * ((1 + monthly_rate) ** months_elapsed - 1) / monthly_rate
+
+    return max(0.0, round(remaining, 2))
+
+
+@app.get("/api/export/financial-statement")
+def export_financial_statement(
+    format: str = Query("pdf", regex="^(pdf|docx)$"),
+    user_id: int = 1,
+    db: Session = Depends(database.get_db),
+):
+    """
+    Generate a Statement of Financial Position and return it as a downloadable file.
+    Supports ?format=pdf (default) and ?format=docx.
+    """
+    today = date.today()
+
+    # ── Gather data ────────────────────────────────────────────────────────────
+    properties_db   = db.query(models.Property).filter(models.Property.user_id == user_id).all()
+    investments_db  = db.query(models.InvestmentAccount).filter(models.InvestmentAccount.user_id == user_id).all()
+
+    # Build property payload with current valuations
+    props_payload = []
+    for p in properties_db:
+        latest_val = (
+            db.query(models.PropertyValuation)
+            .filter(models.PropertyValuation.property_id == p.id)
+            .order_by(models.PropertyValuation.valuation_date.desc())
+            .first()
+        )
+        current_value = latest_val.estimated_value if latest_val else p.purchase_price
+        props_payload.append({
+            "id":             p.id,
+            "property_type":  p.property_type,
+            "address_street": p.address_street,
+            "address_city":   p.address_city,
+            "address_state":  p.address_state,
+            "address":        p.address,
+            "purchase_price": p.purchase_price,
+            "current_value":  current_value,
+        })
+
+    # Build investment payload
+    investments_payload = [
+        {
+            "id":            inv.id,
+            "name":          inv.name,
+            "account_type":  inv.account_type,
+            "current_value": inv.current_value,
+        }
+        for inv in investments_db
+    ]
+
+    # Build mortgage (liability) payload — only properties with active loans
+    mortgages_payload = []
+    for p in properties_db:
+        if not p.initial_loan_value:
+            continue
+        outstanding = _compute_outstanding_balance(p, today)
+        if outstanding <= 0:
+            continue
+        addr_parts = [p.address_street, p.address_city, p.address_state]
+        addr = ", ".join(x for x in addr_parts if x) or p.address or "Property"
+        mortgages_payload.append({
+            "property_id":       p.id,
+            "address":           addr,
+            "outstanding_balance": outstanding,
+        })
+
+    data = {
+        "report_date":  today.strftime("%B %d, %Y"),
+        "properties":   props_payload,
+        "investments":  investments_payload,
+        "mortgages":    mortgages_payload,
+    }
+
+    # ── Generate document ──────────────────────────────────────────────────────
+    try:
+        if format == "pdf":
+            file_path = export_service.generate_pdf(data)
+            media_type = "application/pdf"
+            filename   = f"financial_statement_{today.isoformat()}.pdf"
+        else:
+            file_path = export_service.generate_docx(data)
+            media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            filename   = f"financial_statement_{today.isoformat()}.docx"
+    except Exception as e:
+        logger.error(f"Export failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Export generation failed: {str(e)}")
+
+    return FileResponse(
+        path=file_path,
+        media_type=media_type,
+        filename=filename,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
 
 if __name__ == "__main__":
     import uvicorn
