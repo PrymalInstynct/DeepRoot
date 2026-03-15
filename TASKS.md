@@ -1,5 +1,8 @@
 # Tasks
 
+- [x] 2026-03-15: Fix DOCX Export (Backend) - resolve 'Cannot find module "docx"' by installing dependency and checking implementation.
+- [x] 2026-03-15: Fix Property Entry Form (Frontend) - resolve 'Save Property' button not working.
+- [x] 2026-03-15: Establish DECISIONS.md to track architectural choices (DOCX/PDF export, Property Entry form decouple) and update agent rules to enforce Discovery checking.
 - [x] 2026-03-04: Upgrade financial dashboard to full-stack application (FastAPI, PostgreSQL, Worker, Docker Compose).
 - [x] 2026-03-07: Implemented "Investment Account Entry" feature with full CRUD (Create, Read, Update, Delete) functionality mirroring the Property Entry architecture, including backend SQLAlchemy models and API endpoints. Refactored to remove legacy global settings for investment accounts and implemented dynamic aggregation.
 - [x] 2026-03-07: Enhanced Investment Accounts with non-destructive historical tracking. Every value update now automatically records a timestamped valuation entry, viewable via a new frontend 'History' modal.
@@ -69,16 +72,3 @@
 - [x] 2026-03-05: Fully implemented automated property valuation fetching using a hybrid approach (RentCast API + Playwright scraping fallback). Successfully integrated with Celery worker for scheduled weekly updates.
 - [x] 2026-03-07: Add delete functionality to the "Historical Snapshot Table" on the Historical Ledger tab.
 - [x] 2026-03-07: Implement "Wealth Growth (Actuals)" tab to visualize actual vs. projected wealth growth across Daily, Weekly, Monthly, and Yearly timeframes.
-- [ ] 2026-03-07: Fix the X axis scale of the "Wealth Growth (Actuals)" tab based on which Timeframe is selected.
-  - [ ] Daily: Show one value per day with a 90 day max duration
-  - [ ] Weekly: Show 1 value per week with a 26 week max duration
-  - [ ] Monthly: Show 1 value per month with a 36 month max duration
-  - [ ] Quarterly: Show 1 value per quarter with a 20 Quarter max duration
-  - [ ] Yearly: Show 1 value per year with a 10 year max duration
-- [/] 2026-03-08: Implement "Financial Statement Export" feature. Generate a professional Statement of Financial Position (Balance Sheet) from live user data, downloadable as DOCX and PDF.
-  - [/] Add `GET /api/export/financial-statement?format=docx|pdf` endpoint to `api/main.py`
-  - [/] Create `api/export_service.py` with PDF (reportlab) and DOCX (Node.js docx npm) generators
-  - [/] Create `api/generate_statement.js` Node.js script for DOCX generation
-  - [/] Add export button to the dashboard Net Worth / Overview tab in `financial-planning-dashboard/index.html`
-  - [/] Wire frontend downloads in `financial-planning-dashboard/app.js`
-  - [ ] Verify DOCX and PDF output correctness

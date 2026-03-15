@@ -86,7 +86,6 @@ const App = (function () {
       propInterest: document.getElementById("propInterest"),
       propRate: document.getElementById("propRate"),
       propLoanType: document.getElementById("propLoanType"),
-      propReconBal: document.getElementById("propReconBal"),
       propReconciledBalance: document.getElementById("propReconciledBalance"),
       propReconciliationDate: document.getElementById("propReconciliationDate"),
       btnSaveProperty: document.getElementById("btnSaveProperty"),
@@ -718,7 +717,6 @@ const App = (function () {
             "propInitLoan",
             "propInterest",
             "propRate",
-            "propReconBal",
             "propReconciledBalance",
             "epAmount",
             "lpTotal",
@@ -774,7 +772,7 @@ const App = (function () {
             parseFloat(elements.propInitLoan.value.replace(/,/g, "")) || 0;
 
           const rawRecon =
-            parseFloat(elements.propReconBal.value.replace(/,/g, "")) ||
+            parseFloat(elements.propReconciledBalance.value.replace(/,/g, "")) ||
             null;
 
           const payload = {
@@ -815,7 +813,6 @@ const App = (function () {
               elements.propCity.value = "";
               elements.propState.value = "";
               elements.propZip.value = "";
-              elements.propReconBal.value = "";
               elements.propReconciledBalance.value = "";
               elements.propReconciliationDate.value = "";
               elements.propLoanType.value = "Conventional";
